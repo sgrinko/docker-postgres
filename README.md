@@ -205,8 +205,8 @@ _Переменная указывающая на временную зону в
 _Переменные для отправки писем:_
 | Name | Default value | Description |
 |--------------|--------------|--------------|
-|EMAILTO|DBA-PostgreSQL@interfax.ru|На какой адрес отправлять почтовые сообщения|
-|EMAIL_SERVER|extra.devel.ifx|Имя почтового сервера для отправки писем|
+|EMAILTO|PostgreSQL@my_company.ru|На какой адрес отправлять почтовые сообщения|
+|EMAIL_SERVER|mail.my_company.ru|Имя почтового сервера для отправки писем|
 |EMAIL_HOSTNAME|myhost@noreplay.ru|имя отправителя писем|
 |EMAIL_SEND|yes|Отправку писем можно отменить указав no|
 
@@ -245,8 +245,8 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
       DEPLOY_PASSWORD: qweasdzxc
       TZ: "Europe/Moscow"
-      EMAILTO: "DBA-PostgreSQL@interfax.ru"
-      EMAIL_SERVER: "extra.devel.ifx"
+      EMAILTO: "PostgreSQL@my_company.ru"
+      EMAIL_SERVER: "mail.my_company.ru"
       EMAIL_HOSTNAME: "myhost@noreplay.ru"
       BACKUP_THREADS: "4"
       BACKUP_MODE: "delta"
