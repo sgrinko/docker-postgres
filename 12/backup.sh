@@ -5,11 +5,11 @@
 # $3 - the sign stream wal mode backup: yes (default) or other to sign "archive"
 
 if [ "$EMAILTO" = "" ]; then
-    EMAILTO="PostgreSQL@my_company.ru"
+    EMAILTO="DBA-PostgreSQL@interfax.ru"
 fi
 
 if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=mail.my_company.ru
+    EMAIL_SERVER=extra.devel.ifx
 fi
 
 if [ "$EMAIL_HOSTNAME" = "" ]; then
