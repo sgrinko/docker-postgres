@@ -10,7 +10,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
-ENV POSTGIS_VERSION 3.0.2+dfsg-2.pgdg100+1
+ENV POSTGIS_VERSION 3.0.3+dfsg-2.pgdg100+1
 ENV DEBIAN_RELEASE buster
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
