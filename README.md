@@ -99,7 +99,8 @@ $ docker exec -it temp_postgres_1 update-extension.sh <доп.БД>
 
 ```
 command: |
-      -c shared_preload_libraries='plugin_debugger, pg_stat_statements, auto_explain, pg_buffercache, pg_cron, shared_ispell, pg_prewarm'
+      -c shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+      -c shared_ispell.max_size=70MB
 ```
 
 то проблему 1-го старта с последующей донастройкой можно избежать. Однако надо помнить, что указание такой строки в качестве параметра старта службы не позволит изменить это значение через файл настроек.
@@ -109,7 +110,7 @@ command: |
 Когда контейнер запускается с уже присоединённым каталогом кластера БД, то никаких внутренних скриптов инициализации не применяется. Однако, если есть желание "дотянуть" до стандарта по расширениям и настройкам текущего контейнера, то необходимо иметь ввиду, что для полноценной работы внутренних скриптов необходимо в настройках кластера загружать следующие shared библиотеки:
 
 ```
-plugin_debugger, pg_stat_statements, auto_explain, pg_buffercache, pg_cron, shared_ispell, pg_prewarm
+plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm
 ```
 
 Чтобы "дотянуть" БД до стандарта по расширениям и настройкам текущего контейнера выполните вызов скрипта: `update-extension.sh` как описано чуть выше.
@@ -239,28 +240,30 @@ services:
  
   postgres:
  
-#    image: grufos/postgres:12.5
+#    image: grufos/postgres:13.1
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile
     shm_size: '2gb'
     command: |
-      -c shared_preload_libraries='plugin_debugger, pg_stat_statements, auto_explain, pg_buffercache, pg_cron, shared_ispell, pg_prewarm'
+      -c shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+      -c shared_ispell.max_size=70MB
     volumes:
-      - "/var/lib/pgsql/12/data:/var/lib/postgresql/data"
+      - "/var/lib/pgsql/13/data:/var/lib/postgresql/data"
       - "/var/log/postgresql:/var/log/postgresql"
       - "/var/run/postgresql/:/var/run/postgresql/"
-      - "/mnt/pgbak/:/mnt/pgbak/"
+      - "/mnt/pgbak2/:/mnt/pgbak/"
     ports:
       - "5432:5432"
-    restart: always
     environment:
+#      POSTGRES_INITDB_ARGS: "--locale=ru_RU.UTF8 --data-checksums"
       POSTGRES_PASSWORD: qweasdzxc
       POSTGRES_HOST_AUTH_METHOD: trust
       DEPLOY_PASSWORD: qweasdzxc
+#      TZ: "Etc/UTC"
       TZ: "Europe/Moscow"
-      EMAILTO: "PostgreSQL@my_company.ru"
-      EMAIL_SERVER: "mail.my_company.ru"
+      EMAILTO: "DBA-PostgreSQL@interfax.ru"
+      EMAIL_SERVER: "extra.devel.ifx"
       EMAIL_HOSTNAME: "myhost@noreplay.ru"
       BACKUP_THREADS: "4"
       BACKUP_MODE: "delta"
