@@ -27,12 +27,12 @@ cp -f /var/lib/postgresql/pg_hba.conf $PGDATA
 cp -f /var/lib/postgresql/pg_ident.conf $PGDATA
 cp -f /var/lib/postgresql/postgresql.conf $PGDATA
 
-"${psql[@]}" -c "select pg_reload_conf();" $POSTGRES_DB
+"${psql[@]}" -c "select pg_reload_conf();"
 
-# Create the 'template_postgis' template db
+# Create the 'template_extension' template db
 "${psql[@]}" -f /usr/local/bin/pre.sql -v DEPLOY_PASSWORD="$DEPLOY_PASSWORD"
 
-# Load extension into template_database and $POSTGRES_DB
+# Load extension into template_extension database and $POSTGRES_DB
 for DB in "$POSTGRES_DB" template_extension ; do
     echo "Loading extensions into $DB"
 

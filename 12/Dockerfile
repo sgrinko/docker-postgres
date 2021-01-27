@@ -1,6 +1,8 @@
 # Based on:
 # https://hub.docker.com/_/postgres
+#     https://github.com/docker-library/postgres
 # https://hub.docker.com/r/postgis/postgis
+#    https://github.com/postgis/docker-postgis
 #
 FROM postgres:12.5
 
@@ -10,7 +12,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
-ENV POSTGIS_VERSION 3.0.3+dfsg-2.pgdg100+1
+ENV POSTGIS_VERSION 3.1.0+dfsg-1.pgdg100+1
 ENV DEBIAN_RELEASE buster
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
@@ -69,9 +71,10 @@ RUN apt-get update \
       && rm -rf /tmp/build_ext \
       && mkdir -p $BACKUP_PATH \
       && chmod 0777 $BACKUP_PATH \
-      && chown postgres:postgres $BACKUP_PATH
+      && chown postgres:postgres $BACKUP_PATH /var/log/postgresql
 
 RUN mkdir -p /docker-entrypoint-initdb.d
+
 COPY ./initdb-extension.sh /docker-entrypoint-initdb.d/10_extension.sh
 COPY ./update-extension.sh /usr/local/bin
 COPY ./pre.sql /usr/local/bin
@@ -85,3 +88,5 @@ COPY ./show.sh /usr/local/bin
 COPY ./pg_hba.conf /var/lib/postgresql
 COPY ./pg_ident.conf /var/lib/postgresql
 COPY ./postgresql.conf /var/lib/postgresql
+
+RUN chmod +x /usr/local/bin/*.sh

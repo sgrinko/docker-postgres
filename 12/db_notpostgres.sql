@@ -79,10 +79,6 @@ ALTER EXTENSION file_fdw UPDATE;
 CREATE EXTENSION IF NOT EXISTS amcheck SCHEMA public;
 ALTER EXTENSION amcheck UPDATE;
 
--- Upgrade pg_repack
-CREATE EXTENSION IF NOT EXISTS pg_repack;
-ALTER EXTENSION pg_repack UPDATE;
-
 -- Upgrade btree_gin
 CREATE EXTENSION IF NOT EXISTS btree_gin SCHEMA public;
 ALTER EXTENSION btree_gin UPDATE;
@@ -90,10 +86,6 @@ ALTER EXTENSION btree_gin UPDATE;
 -- Upgrade pldbgapi
 CREATE EXTENSION IF NOT EXISTS pldbgapi SCHEMA public;
 ALTER EXTENSION pldbgapi UPDATE;
-
--- Upgrade plpgsql_check
-CREATE EXTENSION IF NOT EXISTS plpgsql_check SCHEMA public;
-ALTER EXTENSION plpgsql_check UPDATE;
 
 -- Upgrade pg_variables;
 CREATE EXTENSION IF NOT EXISTS pg_variables SCHEMA public;
@@ -129,6 +121,14 @@ ALTER EXTENSION plpython3u UPDATE;
 -- Upgrade pg_tsparser
 CREATE EXTENSION IF NOT EXISTS pg_tsparser SCHEMA public;
 ALTER EXTENSION pg_tsparser UPDATE;
+
+-- Upgrade pg_repack
+DROP EXTENSION IF EXISTS pg_repack;
+CREATE EXTENSION IF NOT EXISTS pg_repack;
+
+-- Upgrade plpgsql_check
+DROP EXTENSION IF EXISTS plpgsql_check SCHEMA public;
+CREATE EXTENSION IF NOT EXISTS plpgsql_check SCHEMA public;
 
 -- ========================================================================== --
 DROP SERVER IF EXISTS dblink_postgres cascade;
