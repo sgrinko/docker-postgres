@@ -6,7 +6,10 @@
 
 ```
 https://hub.docker.com/_/postgres
+https://github.com/docker-library/postgres
+
 https://hub.docker.com/r/postgis/postgis
+https://github.com/postgis/docker-postgis
 ```
 
 Контейнер ориентирован на работу с русской локалью. Выполняются внутри следующие команды:
