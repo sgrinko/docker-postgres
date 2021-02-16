@@ -41,7 +41,7 @@ for DB in "$POSTGRES_DB" template_extension ; do
     if [ "$DB" = "postgres" ] ; then
         "${psql[@]}" --dbname="$DB" -f /usr/local/bin/db_postgres.sql
     else
-        "${psql[@]}" --dbname="$DB" -f /usr/local/bin/db_notpostgres.sql -v POSTGIS_VERSION="$POSTGIS_VERSION" -v DB="$DB" -v DEV_SCHEMA="$DEV_SCHEMA" -v POSTGRES_PASSWORD="$POSTGRES_PASSWORD"
+        "${psql[@]}" --dbname="$DB" -f /usr/local/bin/db_notpostgres.sql -v IS_POSTGIS_VERSION=false -v DB="$DB" -v DEV_SCHEMA="$DEV_SCHEMA" -v POSTGRES_PASSWORD="$POSTGRES_PASSWORD"
     fi
 done
 

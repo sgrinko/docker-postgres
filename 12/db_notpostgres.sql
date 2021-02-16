@@ -12,20 +12,35 @@ ALTER EXTENSION pg_dbo_timestamp UPDATE;
 ALTER EVENT TRIGGER dbots_tg_on_ddl_event DISABLE;
 ALTER EVENT TRIGGER dbots_tg_on_drop_event DISABLE;
 
--- Upgrade PostGIS (includes raster)
-CREATE EXTENSION IF NOT EXISTS postgis VERSION :'POSTGIS_VERSION';
-ALTER EXTENSION postgis  UPDATE TO :'POSTGIS_VERSION';
 
--- Upgrade Topology
-CREATE EXTENSION IF NOT EXISTS postgis_topology VERSION :'POSTGIS_VERSION';
-ALTER EXTENSION postgis_topology UPDATE TO :'POSTGIS_VERSION';
+\if :IS_POSTGIS_VERSION
+  -- Upgrade PostGIS (includes raster)
+  CREATE EXTENSION IF NOT EXISTS postgis VERSION :'POSTGIS_VERSION';
+  ALTER EXTENSION postgis  UPDATE TO :'POSTGIS_VERSION';
 
--- Install Tiger dependencies in case not already installed
-CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+  -- Upgrade Topology
+  CREATE EXTENSION IF NOT EXISTS postgis_topology VERSION :'POSTGIS_VERSION';
+  ALTER EXTENSION postgis_topology UPDATE TO :'POSTGIS_VERSION';
 
--- Upgrade US Tiger Geocoder
-CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder VERSION :'POSTGIS_VERSION';
-ALTER EXTENSION postgis_tiger_geocoder UPDATE TO :'POSTGIS_VERSION';
+  -- Install Tiger dependencies in case not already installed
+  CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+
+  -- Upgrade US Tiger Geocoder
+  CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder VERSION :'POSTGIS_VERSION';
+  ALTER EXTENSION postgis_tiger_geocoder UPDATE TO :'POSTGIS_VERSION';
+\else
+  -- Install PostGIS (includes raster)
+  CREATE EXTENSION IF NOT EXISTS postgis;
+
+  -- Install Topology
+  CREATE EXTENSION IF NOT EXISTS postgis_topology;
+
+  -- Install Tiger dependencies in case not already installed
+  CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+
+  -- Install US Tiger Geocoder
+  CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
+\endif
 
 -- Upgrade citext
 CREATE EXTENSION IF NOT EXISTS citext SCHEMA public;
@@ -127,7 +142,7 @@ DROP EXTENSION IF EXISTS pg_repack;
 CREATE EXTENSION IF NOT EXISTS pg_repack;
 
 -- Upgrade plpgsql_check
-DROP EXTENSION IF EXISTS plpgsql_check SCHEMA public;
+DROP EXTENSION IF EXISTS plpgsql_check;
 CREATE EXTENSION IF NOT EXISTS plpgsql_check SCHEMA public;
 
 -- ========================================================================== --

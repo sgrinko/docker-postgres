@@ -12,7 +12,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
-ENV POSTGIS_VERSION 3.1.0+dfsg-1.pgdg100+1
+ENV POSTGIS_VERSION 3.1.1+dfsg-1.pgdg100+1
 ENV DEBIAN_RELEASE buster
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
@@ -24,8 +24,8 @@ RUN apt-get update \
       && apt-get update \
       && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
       && apt-get install -y --no-install-recommends \
-           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
-           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
+           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
+           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts=$POSTGIS_VERSION \
            pg-probackup-$PG_MAJOR \
            postgresql-plpython3-$PG_MAJOR \
            postgresql-$PG_MAJOR-repack \
@@ -71,6 +71,7 @@ RUN apt-get update \
       && rm -rf /tmp/build_ext \
       && mkdir -p $BACKUP_PATH \
       && chmod 0777 $BACKUP_PATH \
+      && chmod 0777 /var/log/postgresql \
       && chown postgres:postgres $BACKUP_PATH /var/log/postgresql
 
 RUN mkdir -p /docker-entrypoint-initdb.d
