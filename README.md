@@ -143,13 +143,13 @@ $ docker exec -it temp_postgres_1 update-extension.sh my_db
 
 ```
 archive_command:
-if [ -f archive_pause.trigger ]; then exit 1; else if [ -f archive_active.trigger ]; then pg_probackup-12 archive-push -B /mnt/pgbak --instance 12 --wal-file-path %p --wal-file-name %f; else exit 0; fi; fi
+if [ -f archive_pause.trigger ]; then exit 1; else if [ -f archive_active.trigger ]; then pg_probackup-13 archive-push -B /mnt/pgbak --instance 13 --wal-file-path %p --wal-file-name %f; else exit 0; fi; fi
 
 restore_command:
-if [ -f archive_active.trigger ]; then pg_probackup-12 archive-get -B /mnt/pgbak --instance 12 --wal-file-path %p --wal-file-name %f; else exit 0; fi
+if [ -f archive_active.trigger ]; then pg_probackup-13 archive-get -B /mnt/pgbak --instance 13 --wal-file-path %p --wal-file-name %f; else exit 0; fi
 ```
 
-Чтобы WAL файлы начали сохраняться, нужно в каталоге данных создать файл с именем: `archive_active.trigger` (автоматически создается при первом вызове `backup.sh`)
+Чтобы WAL файлы начали сохраняться, нужно в каталоге данных создать файл с именем: `archive_active.trigger` (автоматически создаётся при первом вызове `backup.sh`)
 При его наличии каждый WAL файл сохраняется в бэкап-каталог. 
 
 > При его отсутствии WAL файлы не сохраняются!
@@ -235,7 +235,51 @@ _Переменные влияющие на работу скриптов по �
 |BACKUP_THREADS|4|На сколько потоков можно параллелить бэкап/рестор процесс|
 |BACKUP_STREAM|yes|`yes` - создавать автономные резервные копии. `no` - создавать резервные копии для которых обязательно нужны WAL файлы.|
 
+# Пример старта контейнера через docker run
+
+запуск без примапленных каталогов. Всё данные кластера будут храниться внутри докер контейнера. В данном примере postgres мапится на порт 5433.
+
+```	
+docker run -d --name dev-db -p 127.0.0.1:5433:5432/tcp --shm-size 2147483648 \
+           -e POSTGRES_PASSWORD=postgres \
+           -e POSTGRES_HOST_AUTH_METHOD=trust \
+           -e DEPLOY_PASSWORD=postgres \
+           -e TZ="Etc/UTC" \
+           grufos/postgres:13.2 \
+           -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
+           -c shared_ispell.max_size=70MB
+```
+
+запуск с указанием примапленных каталогов. Все данные кластера будут храниться вне контейнера в каталоге `/var/lib/pgsql/13/data`, а логи в каталоге `/var/log/postgresql`
+
+```	
+docker run -d --name dev-db -p 127.0.0.1:5433:5432/tcp --shm-size 2147483648 \
+		   -e POSTGRES_PASSWORD=postgres \
+		   -e POSTGRES_HOST_AUTH_METHOD=trust \
+		   -e DEPLOY_PASSWORD=postgres \
+		   -e TZ="Etc/UTC" \
+           -v "/var/lib/pgsql/13/data:/var/lib/postgresql/data" \
+           -v "/var/log/postgresql:/var/log/postgresql" \
+		   grufos/postgres:13.2 \
+		   -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
+		   -c shared_ispell.max_size=70MB
+```
+
+остановка контейнера
+
+```	
+docker stop dev-db
+```
+
+запуск ранее остановленного контейнера
+
+```	
+docker start dev-db
+```
+
 # Пример docker-compose файла
+
+Создаём файл postgres-service.yml
 
 ```
 version: '3.5'
@@ -243,7 +287,7 @@ services:
  
   postgres:
  
-#    image: grufos/postgres:13.1
+#    image: grufos/postgres:13.2
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile
@@ -277,8 +321,6 @@ services:
 ```
 #!/bin/bash
 clear
-rm -rf /var/log/pgbouncer/*
 rm -rf /var/log/postgresql/*
-rm -rf /var/log/mamonsu/*
 docker-compose -f "postgres-service.yml" up --build "$@"
 ```

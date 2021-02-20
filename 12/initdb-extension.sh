@@ -23,9 +23,21 @@ echo "-- initdb --"
 echo "------------"
 
 # copy start configuration files to pgdata
-cp -f /var/lib/postgresql/pg_hba.conf $PGDATA
+if [ 'trust' = "$POSTGRES_HOST_AUTH_METHOD" ]; then
+    # create entrypoint for trust
+    sed "s/md5/trust/g" /var/lib/postgresql/pg_hba.conf > $PGDATA/pg_hba.conf
+else
+    # the default is password entry (md5)
+    cp -f /var/lib/postgresql/pg_hba.conf $PGDATA
+fi
 cp -f /var/lib/postgresql/pg_ident.conf $PGDATA
-cp -f /var/lib/postgresql/postgresql.conf $PGDATA
+if [ -n "$TZ" ]; then
+    TZ_R=${TZ/'/'/'\/'}
+    # specifies a specific time zone for the server time zone
+    sed "s/timezone = 'UTC'/timezone = '$TZ_R'/g" /var/lib/postgresql/postgresql.conf > $PGDATA/postgresql.conf
+else
+    cp -f /var/lib/postgresql/postgresql.conf $PGDATA
+fi
 
 "${psql[@]}" -c "select pg_reload_conf();"
 
