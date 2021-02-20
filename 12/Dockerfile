@@ -35,7 +35,6 @@ RUN apt-get update \
            postgresql-$PG_MAJOR-rum \
            postgresql-$PG_MAJOR-tds-fdw \
       && sed -i.bak "s/text size = 64512/text size = 1262485504/g" /etc/freetds/freetds.conf \
-      && rm -rf /var/lib/apt/lists/* \
       && cd /tmp \
       && mkdir -p build_ext \
       && cd build_ext \
@@ -72,7 +71,15 @@ RUN apt-get update \
       && mkdir -p $BACKUP_PATH \
       && chmod 0777 $BACKUP_PATH \
       && chmod 0777 /var/log/postgresql \
-      && chown postgres:postgres $BACKUP_PATH /var/log/postgresql
+      && chown postgres:postgres $BACKUP_PATH /var/log/postgresql \
+      # clean all unused package...
+      && rm -rf /var/lib/apt/lists/* \
+      && apt-mark hold llvm-7 llvm-7-runtime \
+      && apt-get purge -y gcc freetds-dev git make postgresql-server-dev-$PG_MAJOR libicu-dev *-dev* \
+      && apt-get -f install \
+      && apt-get -y autoremove \
+      && apt-get -y clean \
+      && apt-get -y autoclean
 
 RUN mkdir -p /docker-entrypoint-initdb.d
 
