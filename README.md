@@ -33,53 +33,53 @@ ENV LANG ru_RU.utf8
 
 _В шаблонную БД установлены расширения:_
 
-| Extension | Description |
-|--------------|--------------|
-|adminpack|administrative functions for PostgreSQL|
-|amcheck|functions for verifying relation integrity|
-|btree_gin|support for indexing common datatypes in GIN|
-|citext|data type for case-insensitive character strings|
-|dblink|connect to other PostgreSQL databases from within a database|
-|file_fdw|foreign-data wrapper for flat file access|
-|fuzzystrmatch|determine similarities and distance between strings|
-|hunspell_en_us|en_US Hunspell Dictionary|
-|hunspell_ru_ru|Russian Hunspell Dictionary|
-|hunspell_ru_ru_aot|Russian Hunspell Dictionary (from AOT.ru group)|
-|pageinspect|inspect the contents of database pages at a low level|
-|pg_buffercache|examine the shared buffer cache|
-|pg_dbo_timestamp|PostgreSQL extension for storing time and author of database structure modification|
-|pg_prewarm|prewarm relation data|
-|pg_repack|Reorganize tables in PostgreSQL databases with minimal locks|
-|pg_stat_statements|track execution statistics of all SQL statements executed|
-|pg_trgm|text similarity measurement and index searching based on trigrams|
-|pg_tsparser|parser for text search|
-|pg_variables|session variables with various types|
-|pgstattuple|show tuple-level statistics|
-|pldbgapi|server-side support for debugging PL/pgSQL functions|
-|plpgsql|PL/pgSQL procedural language|
-|plpgsql_check|extended check for plpgsql functions|
-|plpython3u|PL/Python3U untrusted procedural language|
-|postgis|PostGIS geometry, geography, and raster spatial types and functions|
-|postgis_tiger_geocoder|PostGIS tiger geocoder and reverse geocoder|
-|postgis_topology|PostGIS topology spatial types and functions|
-|postgres_fdw|foreign-data wrapper for remote PostgreSQL servers|
-|rum|RUM index access method|
-|shared_ispell|Provides shared ispell dictionaries.|
-|uuid-ossp|generate universally unique identifiers (UUIDs)|
+| Extension              | Description                                                                         |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| adminpack              | administrative functions for PostgreSQL                                             |
+| amcheck                | functions for verifying relation integrity                                          |
+| btree_gin              | support for indexing common datatypes in GIN                                        |
+| citext                 | data type for case-insensitive character strings                                    |
+| dblink                 | connect to other PostgreSQL databases from within a database                        |
+| file_fdw               | foreign-data wrapper for flat file access                                           |
+| fuzzystrmatch          | determine similarities and distance between strings                                 |
+| hunspell_en_us         | en_US Hunspell Dictionary                                                           |
+| hunspell_ru_ru         | Russian Hunspell Dictionary                                                         |
+| hunspell_ru_ru_aot     | Russian Hunspell Dictionary (from AOT.ru group)                                     |
+| pageinspect            | inspect the contents of database pages at a low level                               |
+| pg_buffercache         | examine the shared buffer cache                                                     |
+| pg_dbo_timestamp       | PostgreSQL extension for storing time and author of database structure modification |
+| pg_prewarm             | prewarm relation data                                                               |
+| pg_repack              | Reorganize tables in PostgreSQL databases with minimal locks                        |
+| pg_stat_statements     | track execution statistics of all SQL statements executed                           |
+| pg_trgm                | text similarity measurement and index searching based on trigrams                   |
+| pg_tsparser            | parser for text search                                                              |
+| pg_variables           | session variables with various types                                                |
+| pgstattuple            | show tuple-level statistics                                                         |
+| pldbgapi               | server-side support for debugging PL/pgSQL functions                                |
+| plpgsql                | PL/pgSQL procedural language                                                        |
+| plpgsql_check          | extended check for plpgsql functions                                                |
+| plpython3u             | PL/Python3U untrusted procedural language                                           |
+| postgis                | PostGIS geometry, geography, and raster spatial types and functions                 |
+| postgis_tiger_geocoder | PostGIS tiger geocoder and reverse geocoder                                         |
+| postgis_topology       | PostGIS topology spatial types and functions                                        |
+| postgres_fdw           | foreign-data wrapper for remote PostgreSQL servers                                  |
+| rum                    | RUM index access method                                                             |
+| shared_ispell          | Provides shared ispell dictionaries.                                                |
+| uuid-ossp              | generate universally unique identifiers (UUIDs)                                     |
 
 _Настроены 5 конфигураций полнотекстового поиска для русского и английского языка:_
 
-| Name | Description |
-|--------------|--------------|
-|fts_aot_en_ru|FTS hunspell AOT configuration for russian language based on shared_ispell without stopwords|
-|fts_hunspell_en_ru|FTS hunspell Lebedev configuration for russian language based on shared_ispell without stopwords|
-|fts_aot_en_ru_sw|FTS hunspell AOT configuration for russian language based on shared_ispell with stopwords|
-|fts_hunspell_en_ru_sw|FTS hunspell Lebedev configuration for russian language based on shared_ispell with stopwords|
-|fts_snowball_en_ru_sw|FTS snowball configuration for russian language based on tsparser with stopwords|
+| Name                  | Description                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------ |
+| fts_aot_en_ru         | FTS hunspell AOT configuration for russian language based on shared_ispell without stopwords     |
+| fts_aot_en_ru_sw      | FTS hunspell AOT configuration for russian language based on shared_ispell with stopwords        |
+| fts_hunspell_en_ru    | FTS hunspell Lebedev configuration for russian language based on shared_ispell without stopwords |
+| fts_hunspell_en_ru_sw | FTS hunspell Lebedev configuration for russian language based on shared_ispell with stopwords    |
+| fts_snowball_en_ru_sw | FTS snowball configuration for russian language based on tsparser with stopwords                 |
 
 _Особенность:_
 * использование парсера `tsparser` и загрузки используемых словарей в общую память однократно при старте сервера. Используется расширение `shared_ispell`. Русские и английские словари взяты из расширения `hunspell_dicts`
-* 3 конфигурации с использованием стоп-слов (постфикс "_sw") и 2 конфигурации без использования стоп слов
+* 3 конфигурации с использованием стоп-слов (постфикс "_sw") и 2 конфигурации без использования стоп-слов
 
 # Старт контейнера
 
@@ -106,19 +106,24 @@ command: |
       -c shared_ispell.max_size=70MB
 ```
 
-то проблему 1-го старта с последующей донастройкой можно избежать. Однако надо помнить, что указание такой строки в качестве параметра старта службы не позволит изменить это значение через файл настроек.
+то проблему 1-го старта с последующей донастройкой можно избежать. Однако надо помнить, что указание такой строки в качестве параметра старта службы не позволит изменить эти значение через файл настроек.
 
 * Старт с уже инициализированным каталогом
 
 Когда контейнер запускается с уже присоединённым каталогом кластера БД, то никаких внутренних скриптов инициализации не применяется. Однако, если есть желание "дотянуть" до стандарта по расширениям и настройкам текущего контейнера, то необходимо иметь ввиду, что для полноценной работы внутренних скриптов необходимо в настройках кластера загружать следующие shared библиотеки:
 
 ```
-plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm
+shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+```
+
+а также в файле настроек указать параметр: 
+```
+shared_ispell.max_size=70MB
 ```
 
 Чтобы "дотянуть" БД до стандарта по расширениям и настройкам текущего контейнера выполните вызов скрипта: `update-extension.sh` как описано чуть выше.
 
-В кластере БД, созданном с нуля, `pg_hba.conf` и `pg_ident.conf` имеют значения, рассчитанные на вход по паролю, а `postgresql.conf` оптимизирован под 2 ГБ ОЗУ и SSD диски. При необходимости, после первичной инициализации уточните параметры конфигурации.
+В кластере БД, созданном с нуля, `pg_hba.conf` и `pg_ident.conf` имеют значения, рассчитанные на вход по паролю (на это оказывает влияние параметр POSTGRES_HOST_AUTH_METHOD), а `postgresql.conf` оптимизирован под 2 ГБ ОЗУ и SSD диски. При необходимости, после первичной инициализации уточните параметры конфигурации.
 
 # Пользовательская БД
 
@@ -139,7 +144,7 @@ $ docker exec -it temp_postgres_1 update-extension.sh my_db
 
 # Работа с бэкапами
 
-Контейнер рассчитан на работу с утилитой бэкапирования `pg_probackup` от компании PostgresProfessional. В настройках `archive_command` и `restore_command` написана bash команда для вызова архивации/восстановления WAL файлов:
+Контейнер рассчитан на работу с утилитой бэкапирования `pg_probackup` от компании Postgres Professional. В настройках `archive_command` и `restore_command` написана bash команда для вызова архивации/восстановления WAL файлов:
 
 ```
 archive_command:
@@ -188,52 +193,61 @@ $2 - список email получателей письма (через проб
 
 Часть переменных имеет значения по умолчанию, это значит, что если их не указывать при старте контейнера, то они имеют указанные значения.
 
-_Каталог данных:_
-
-| Name | Default value | Description |
-|--------------|--------------|--------------|
-|PGDATA|/var/lib/postgresql/data|Эту необязательную переменную можно использовать для определения другого местоположения - например, подкаталога - для файлов базы данных. Если используемый вами том данных является точкой монтирования файловой системы или удаленной папкой, которая не может быть подключена для пользователя postgres (например, некоторые монтируемые NFS), Postgres initdb рекомендует создать подкаталог для хранения данных.|
-
 _Переменные использующиеся только при первичной инициализации:_
 
-| Name | Default value | Description |
-|--------------|--------------|--------------|
-|POSTGRES_INITDB_ARGS|--locale=ru_RU.UTF8 --data-checksums|Эту необязательную переменную среды можно использовать для отправки аргументов в postgres initdb. Значение представляет собой строку аргументов, разделенных пробелами, как того и ожидает postgres initdb.|
-|POSTGRES_HOST_AUTH_METHOD|md5|Эту необязательную переменную можно использовать для управления методом аутентификации для соединений с хостом для всех баз данных, всех пользователей и всех адресов. Это значение используется только на этапе первичной инициализации.|
-|POSTGRES_INITDB_WALDIR|PGDATA/pg_wal|Эту необязательную переменную среды можно использовать для определения другого места для журнала транзакций Postgres. Иногда может быть желательно хранить журнал транзакций в другом каталоге, который может поддерживаться хранилищем с другими характеристиками производительности или надежности.|
+| Name                      | Default value                        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POSTGRES_INITDB_ARGS      | --locale=ru_RU.UTF8 --data-checksums | Эту необязательную переменную среды можно использовать для отправки аргументов в postgres initdb. Значение представляет собой строку аргументов, разделенных пробелами, как того и ожидает postgres initdb.                                                                                                                                                                                                                                                                                                    |
+| POSTGRES_HOST_AUTH_METHOD | md5                                  | Эту необязательную переменную можно использовать для управления методом аутентификации для соединений с хостом для всех баз данных, всех пользователей и всех адресов. Это значение используется только на этапе первичной инициализации.                                                                                                                                                                                                                                                                      |
+| PGDATA                    | /var/lib/postgresql/data             | Эту необязательную переменную можно использовать для определения другого местоположения - например, подкаталога - для файлов базы данных. По умолчанию это /var/lib/postgresql/data. Если используемый вами том данных является точкой монтирования файловой системы (например, с постоянными дисками GCE) или удаленной папкой, которая не может быть подключена для пользователя postgres (например, некоторые точки монтирования в NFS), Postgres initdb рекомендует создать подкаталог для хранения данных |
+| POSTGRES_INITDB_WALDIR    | PGDATA/pg_wal                        | Эту необязательную переменную среды можно использовать для определения другого места для журнала транзакций Postgres. Иногда может быть желательно хранить журнал транзакций в другом каталоге, который может поддерживаться хранилищем с другими характеристиками производительности или надежности.                                                                                                                                                                                                          |
+
+Пример показывающий использование подкаталога для каталога данных:
+
+```
+$ docker run -d \
+    --name some-postgres \
+    -e POSTGRES_PASSWORD=qweasdzxc \
+    -e PGDATA=/var/lib/postgresql/data/pgdata \
+    -v /custom/mount:/var/lib/postgresql/data \
+    postgres
+```
+
+Обратите внимание, что мы подключаемый каталог монтируем на 1 уровень выше, чем указали в переменной PGDATA. В этом и есть смысл использования переменной PGDATA
 
 _Переменные с данными по подключению к БД:_
 
-| Name | Default value | Description |
-|--------------|--------------|--------------|
-|POSTGRES_USER|postgres|Эта переменная создаст указанного пользователя с полномочиями суперпользователя и базу данных с тем же именем. Не рекомендуется менять значение этой переменной.|
-|POSTGRES_DB|postgres|Эту необязательную переменную среды можно использовать для определения другого имени для базы данных по умолчанию, которая создается при первом запуске образа. Если он не указан, будет использоваться значение POSTGRES_USER. Не рекомендуется менять значение этой переменной.|
-|POSTGRES_PASSWORD| |Определяет пароль пользователя POSTGRES_USER. Это значение указывается в настройках мапинга пользователя для FDW серверов.|
-|DEV_SCHEMA|dbo|Имя схемы, выбираемая как схема по умолчанию для пользовательских объектов. Это имя включается в параметр search_path и эта схема создается если её нет.|
+| Name              | Default value | Description                                                                                                                                                                                                                                                                       |
+| ----------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POSTGRES_USER     | postgres      | Эта переменная создаст указанного пользователя с полномочиями суперпользователя и базу данных с тем же именем. Не рекомендуется менять значение этой переменной.                                                                                                                  |
+| POSTGRES_DB       | postgres      | Эту необязательную переменную среды можно использовать для определения другого имени для базы данных по умолчанию, которая создается при первом запуске образа. Если он не указан, будет использоваться значение POSTGRES_USER. Не рекомендуется менять значение этой переменной. |
+| POSTGRES_PASSWORD |               | Определяет пароль пользователя POSTGRES_USER. Это значение указывается в настройках мапинга пользователя для FDW серверов.                                                                                                                                                        |
+| DEV_SCHEMA        | dbo           | Имя схемы, выбираемая как схема по умолчанию для пользовательских объектов. Это имя включается в параметр search_path и эта схема создается если её нет.                                                                                                                          |
+| DEPLOY_PASSWORD   |               | Пароль для создаваемого пользователя с именем deploy. Это пользователь с повышенными правами, но не superuser. Предполагается, что он будет владельцем всех создаваемх БД и объектов в них                                                                                        |
 
 _Переменная указывающая на временную зону в которой работает контейнер:_
 
-| Name | Default value | Description |
-|--------------|--------------|--------------|
-|TZ| |Указывает на временную зону в которой работает контейнер. Например: "Europe/Moscow" или "Etc/UTC"|
+| Name | Default value | Description                                                                                       |
+| ---- | ------------- | ------------------------------------------------------------------------------------------------- |
+| TZ   |               | Указывает на временную зону в которой работает контейнер. Например: "Europe/Moscow" или "Etc/UTC" |
 
 _Переменные для отправки писем:_
 
-| Name | Default value | Description |
-|--------------|--------------|--------------|
-|EMAILTO|PostgreSQL@my_company.ru|На какой адрес отправлять почтовые сообщения|
-|EMAIL_SERVER|mail.my_company.ru|Имя почтового сервера для отправки писем|
-|EMAIL_HOSTNAME|noreply@my_host.ru|имя отправителя писем|
-|EMAIL_SEND|yes|Отправку писем можно отменить указав no|
+| Name           | Default value            | Description                                  |
+| -------------- | ------------------------ | -------------------------------------------- |
+| EMAILTO        | PostgreSQL@my_company.ru | На какой адрес отправлять почтовые сообщения |
+| EMAIL_SERVER   | mail.my_company.ru       | Имя почтового сервера для отправки писем     |
+| EMAIL_HOSTNAME | noreply@my_host.ru       | имя отправителя писем                        |
+| EMAIL_SEND     | yes                      | Отправку писем можно отменить указав `no`    |
 
 _Переменные влияющие на работу скриптов по бэкапам:_
 
-| Name | Default value | Description |
-|--------------|--------------|--------------|
-|BACKUP_MODE|delta|Режим инкрементального бэкапа. Альтернативное значение page|
-|BACKUP_PATH|/mnt/pgbak|Каталог используемый утилитой pg_probackup для хранения всех бэкапов|
-|BACKUP_THREADS|4|На сколько потоков можно параллелить бэкап/рестор процесс|
-|BACKUP_STREAM|yes|`yes` - создавать автономные резервные копии. `no` - создавать резервные копии для которых обязательно нужны WAL файлы.|
+| Name           | Default value | Description                                                                                                             |
+| -------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| BACKUP_MODE    | delta         | Режим инкрементального бэкапа. Альтернативное значение page                                                             |
+| BACKUP_PATH    | /mnt/pgbak    | Каталог используемый утилитой pg_probackup для хранения всех бэкапов                                                    |
+| BACKUP_THREADS | 4             | На сколько потоков можно параллелить бэкап/рестор процесс                                                               |
+| BACKUP_STREAM  | yes           | `yes` - создавать автономные резервные копии. `no` - создавать резервные копии для которых обязательно нужны WAL файлы. |
 
 # Пример старта контейнера через docker run
 
@@ -241,9 +255,9 @@ _Переменные влияющие на работу скриптов по �
 
 ```	
 docker run -d --name dev-db -p 127.0.0.1:5433:5432/tcp --shm-size 2147483648 \
-           -e POSTGRES_PASSWORD=postgres \
+           -e POSTGRES_PASSWORD=qweasdzxc \
            -e POSTGRES_HOST_AUTH_METHOD=trust \
-           -e DEPLOY_PASSWORD=postgres \
+           -e DEPLOY_PASSWORD=cxzdsaewq \
            -e TZ="Etc/UTC" \
            grufos/postgres:13.2 \
            -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
@@ -254,12 +268,12 @@ docker run -d --name dev-db -p 127.0.0.1:5433:5432/tcp --shm-size 2147483648 \
 
 ```	
 docker run -d --name dev-db -p 127.0.0.1:5433:5432/tcp --shm-size 2147483648 \
-		   -e POSTGRES_PASSWORD=postgres \
+		   -e POSTGRES_PASSWORD=qweasdzxc \
 		   -e POSTGRES_HOST_AUTH_METHOD=trust \
-		   -e DEPLOY_PASSWORD=postgres \
+		   -e DEPLOY_PASSWORD=cxzdsaewq \
 		   -e TZ="Etc/UTC" \
-           -v "/var/lib/pgsql/13/data:/var/lib/postgresql/data" \
-           -v "/var/log/postgresql:/var/log/postgresql" \
+       -v "/var/lib/pgsql/13/data:/var/lib/postgresql/data" \
+       -v "/var/log/postgresql:/var/log/postgresql" \
 		   grufos/postgres:13.2 \
 		   -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
 		   -c shared_ispell.max_size=70MB
@@ -298,7 +312,6 @@ services:
     volumes:
       - "/var/lib/pgsql/13/data:/var/lib/postgresql/data"
       - "/var/log/postgresql:/var/log/postgresql"
-      - "/var/run/postgresql/:/var/run/postgresql/"
       - "/mnt/pgbak2/:/mnt/pgbak/"
     ports:
       - "5432:5432"
@@ -306,12 +319,12 @@ services:
 #      POSTGRES_INITDB_ARGS: "--locale=ru_RU.UTF8 --data-checksums"
       POSTGRES_PASSWORD: qweasdzxc
       POSTGRES_HOST_AUTH_METHOD: trust
-      DEPLOY_PASSWORD: qweasdzxc
+      DEPLOY_PASSWORD: cxzdsaewq
 #      TZ: "Etc/UTC"
       TZ: "Europe/Moscow"
       EMAILTO: "DBA-PostgreSQL@interfax.ru"
       EMAIL_SERVER: "extra.devel.ifx"
-      EMAIL_HOSTNAME: "myhost@noreplay.ru"
+      EMAIL_HOSTNAME: "noreplay@my_host.ru"
       BACKUP_THREADS: "4"
       BACKUP_MODE: "delta"
 ```

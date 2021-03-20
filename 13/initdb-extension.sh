@@ -23,9 +23,9 @@ echo "-- initdb --"
 echo "------------"
 
 # copy start configuration files to pgdata
-if [ 'trust' = "$POSTGRES_HOST_AUTH_METHOD" ]; then
-    # create entrypoint for trust
-    sed "s/md5/trust/g" /var/lib/postgresql/pg_hba.conf > $PGDATA/pg_hba.conf
+if [ 'md5' != "$POSTGRES_HOST_AUTH_METHOD" ]; then
+    # create entrypoint for trust or another method access
+    sed "s/md5/$POSTGRES_HOST_AUTH_METHOD/g" /var/lib/postgresql/pg_hba.conf > $PGDATA/pg_hba.conf
 else
     # the default is password entry (md5)
     cp -f /var/lib/postgresql/pg_hba.conf $PGDATA
