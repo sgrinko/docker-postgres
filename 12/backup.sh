@@ -14,7 +14,7 @@ fi
 
 if [ "$EMAIL_HOSTNAME" = "" ]; then
     EMAIL_HOSTNAME=`hostname`
-    EMAIL_HOSTNAME="${EMAIL_HOSTNAME}@noreplay.ru"
+    EMAIL_HOSTNAME="noreplay@${EMAIL_HOSTNAME}.ru"
 fi
 
 if [ "$EMAIL_SEND" = "" ]; then

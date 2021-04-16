@@ -152,7 +152,7 @@ DROP SERVER IF EXISTS fdw_postgres cascade;
 -- DBLINK: в БД postgres
 CREATE SERVER IF NOT EXISTS dblink_postgres
   FOREIGN DATA WRAPPER dblink_fdw
-  OPTIONS (host '127.0.0.1', port '5432', dbname 'postgres');
+  OPTIONS (host 'localhost', port '5432', dbname 'postgres');
 -- user
 CREATE USER MAPPING IF NOT EXISTS FOR postgres
   SERVER dblink_postgres
@@ -161,7 +161,7 @@ CREATE USER MAPPING IF NOT EXISTS FOR postgres
 -- FDW: в БД postgres
 CREATE SERVER IF NOT EXISTS fdw_postgres
   FOREIGN DATA WRAPPER postgres_fdw
-  OPTIONS (host '127.0.0.1', port '5432', dbname 'postgres');
+  OPTIONS (host 'localhost', port '5432', dbname 'postgres');
 -- user
 CREATE USER MAPPING IF NOT EXISTS FOR postgres
   SERVER fdw_postgres
