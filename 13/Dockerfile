@@ -93,6 +93,7 @@ COPY ./db_notpostgres.sql /usr/local/bin
 COPY ./db_target.sql /usr/local/bin
 COPY ./backup.sh /usr/local/bin
 COPY ./show.sh /usr/local/bin
+COPY ./check_cluster.sh /usr/local/bin
 COPY ./pg_hba.conf /var/lib/postgresql
 COPY ./pg_ident.conf /var/lib/postgresql
 COPY ./postgresql.conf /var/lib/postgresql

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # $1 - the count threads: 4 (default) or this number
-# $2 - the type mode backup: delta (default) or page
+# $2 - the type mode backup: delta (default), page or full (create full backup)
 # $3 - the sign stream wal mode backup: yes (default) or other to sign "archive"
 
 if [ "$EMAILTO" = "" ]; then
@@ -83,7 +83,7 @@ fi
 # calculate day week
 DOW=$(date +%u)
 
-if [ "$IS_FULL" = "" ] ; then
+if [[ "$IS_FULL" = "" || $BACKUP_MODE = "full" ]] ; then
     su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR backup -d postgres --backup-path=$BACKUP_PATH -b full $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired"
 else
    if [ "$DOW" = "6" ] ; then
