@@ -148,7 +148,7 @@ $ docker exec -it temp_postgres_1 update-extension.sh my_db
 
 ```
 archive_command:
-if [ -f archive_pause.trigger ]; then exit 1; else if [ -f archive_active.trigger ]; then pg_probackup-13 archive-push -B /mnt/pgbak --instance 13 --wal-file-path %p --wal-file-name %f; else exit 0; fi; fi
+if [ -f archive_pause.trigger ]; then exit 1; else if [ -f archive_active.trigger ]; then pg_probackup-13 archive-push -B /mnt/pgbak --instance 13 --wal-file-path %p --wal-file-name %f -j 4 --batch-size=50; else exit 0; fi; fi
 
 restore_command:
 if [ -f archive_active.trigger ]; then pg_probackup-13 archive-get -B /mnt/pgbak --instance 13 --wal-file-path %p --wal-file-name %f; else exit 0; fi
@@ -161,17 +161,20 @@ if [ -f archive_active.trigger ]; then pg_probackup-13 archive-get -B /mnt/pgbak
 
 Чтобы временно приостановить выгрузку WAL файлов в бэкап-каталог нужно создать файл: `archive_pause.trigger` (это может понадобиться для временных работ с бэкапным каталогом).
 
-В контейнере есть 2 дополнительных скрипта:
+В контейнере есть 3 дополнительных скрипта:
 
 `backup.sh` - создаёт новый бэкап
 
 `show.sh` - показывает какие бэкапы есть
+
+`check_cluster.sh` - выполняет проверку кластера на возможные ошибки в структуре БД
 
 Для запуска можно использовать команды:
 
 ```
 $ docker exec -it temp_postgres_1 backup.sh
 $ docker exec -it temp_postgres_1 show.sh
+$ docker exec -it temp_postgres_1 check_cluster.sh
 ```
 
 Скрипт `backup.sh` может принимать до 3-х параметров:
@@ -187,6 +190,13 @@ $3 - признак создания автономного бэкапа тип�
 ```
 $1 - yes/no (нужно ли отсылать письмо с отчетом по текущим бэкапам)
 $2 - список email получателей письма (через пробел и обрамить двойными кавычками)
+```
+
+Скрипт check_cluster.sh может принимать до 2 -х параметров:
+
+```
+$1 - 'amcheck' включить доп.проверку кластера при помощи расширения amcheck
+$2 - 'heapallindexed' будет дополнительно проверено, что в индексе действительно представлены все кортежи кучи, которые должны в него попасть
 ```
 
 # Переменные окружения контейнера
@@ -254,12 +264,12 @@ _Переменные влияющие на работу скриптов по �
 запуск без примапленных каталогов. Всё данные кластера будут храниться внутри докер контейнера. В данном примере postgres мапится на порт 5433.
 
 ```	
-docker run -d --name dev-db -p 127.0.0.1:5433:5432/tcp --shm-size 2147483648 \
+docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
            -e POSTGRES_PASSWORD=qweasdzxc \
            -e POSTGRES_HOST_AUTH_METHOD=trust \
            -e DEPLOY_PASSWORD=cxzdsaewq \
            -e TZ="Etc/UTC" \
-           grufos/postgres:13.2 \
+           grufos/postgres:13.3 \
            -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
            -c shared_ispell.max_size=70MB
 ```
@@ -267,14 +277,14 @@ docker run -d --name dev-db -p 127.0.0.1:5433:5432/tcp --shm-size 2147483648 \
 запуск с указанием примапленных каталогов. Все данные кластера будут храниться вне контейнера в каталоге `/var/lib/pgsql/13/data`, а логи в каталоге `/var/log/postgresql`
 
 ```	
-docker run -d --name dev-db -p 127.0.0.1:5433:5432/tcp --shm-size 2147483648 \
+docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
 		   -e POSTGRES_PASSWORD=qweasdzxc \
 		   -e POSTGRES_HOST_AUTH_METHOD=trust \
 		   -e DEPLOY_PASSWORD=cxzdsaewq \
 		   -e TZ="Etc/UTC" \
        -v "/var/lib/pgsql/13/data:/var/lib/postgresql/data" \
        -v "/var/log/postgresql:/var/log/postgresql" \
-		   grufos/postgres:13.2 \
+		   grufos/postgres:13.3 \
 		   -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
 		   -c shared_ispell.max_size=70MB
 ```
@@ -301,7 +311,7 @@ services:
  
   postgres:
  
-#    image: grufos/postgres:13.2
+#    image: grufos/postgres:13.3
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile
