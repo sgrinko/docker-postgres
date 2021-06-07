@@ -17,7 +17,7 @@ export PGDATABASE="$POSTGRES_DB"
 
 POSTGIS_VERSION="${POSTGIS_VERSION%%+*}"
 
-# Create the 'template_postgis' template db
+# Create the 'template_extension' template db
 su - postgres -c "psql -f /usr/local/bin/pre.sql -v DEPLOY_PASSWORD=\"$DEPLOY_PASSWORD\""
 
 # Load extension into both template_database and $POSTGRES_DB
