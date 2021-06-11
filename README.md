@@ -245,8 +245,8 @@ _Переменные для отправки писем:_
 
 | Name           | Default value            | Description                                  |
 | -------------- | ------------------------ | -------------------------------------------- |
-| EMAILTO        | PostgreSQL@my_company.ru | На какой адрес отправлять почтовые сообщения |
-| EMAIL_SERVER   | mail.my_company.ru       | Имя почтового сервера для отправки писем     |
+| EMAILTO        |                          | На какой адрес отправлять почтовые сообщения |
+| EMAIL_SERVER   |                          | Имя почтового сервера для отправки писем     |
 | EMAIL_HOSTNAME | noreply@my_host.ru       | имя отправителя писем                        |
 | EMAIL_SEND     | yes                      | Отправку писем можно отменить указав `no`    |
 
@@ -310,7 +310,7 @@ version: '3.5'
 services:
  
   postgres:
- 
+
 #    image: grufos/postgres:13.3
     build:
       context: ./docker-postgres
@@ -320,20 +320,20 @@ services:
       -c shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
       -c shared_ispell.max_size=70MB
     volumes:
-      - "/var/lib/pgsql/13/data:/var/lib/postgresql/data"
-      - "/var/log/postgresql:/var/log/postgresql"
+      - "/var/lib/pgsql/13_1/data:/var/lib/postgresql/data"
+      - "/var/log/postgresql1:/var/log/postgresql"
       - "/mnt/pgbak2/:/mnt/pgbak/"
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
 #      POSTGRES_INITDB_ARGS: "--locale=ru_RU.UTF8 --data-checksums"
       POSTGRES_PASSWORD: qweasdzxc
       POSTGRES_HOST_AUTH_METHOD: trust
-      DEPLOY_PASSWORD: cxzdsaewq
+      DEPLOY_PASSWORD: qweasdzxc
 #      TZ: "Etc/UTC"
       TZ: "Europe/Moscow"
-      EMAILTO: "DBA-PostgreSQL@interfax.ru"
-      EMAIL_SERVER: "extra.devel.ifx"
+      EMAILTO: "DBA-PostgreSQL@my_name.ru"
+      EMAIL_SERVER: "mail.name.ru"
       EMAIL_HOSTNAME: "noreplay@my_host.ru"
       BACKUP_THREADS: "4"
       BACKUP_MODE: "delta"
@@ -346,4 +346,100 @@ services:
 clear
 rm -rf /var/log/postgresql/*
 docker-compose -f "postgres-service.yml" up --build "$@"
+```
+
+Пример файл для запуска нескольких сервисов сразу postgres-service-all.yml
+
+```
+version: '3.5'
+services:
+
+  postgres:
+
+#    image: grufos/postgres:13.3
+    build:
+      context: ./docker-postgres
+      dockerfile: Dockerfile
+    shm_size: '2gb'
+    command: |
+      -c shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+      -c shared_ispell.max_size=70MB
+    volumes:
+      - "/var/lib/pgsql/13_1/data:/var/lib/postgresql/data"
+      - "/var/log/postgresql1:/var/log/postgresql"
+      - "/mnt/pgbak2/:/mnt/pgbak/"
+    ports:
+      - "5433:5432"
+    environment:
+#      POSTGRES_INITDB_ARGS: "--locale=ru_RU.UTF8 --data-checksums"
+      POSTGRES_PASSWORD: qweasdzxc
+      POSTGRES_HOST_AUTH_METHOD: trust
+      DEPLOY_PASSWORD: qweasdzxc
+#      TZ: "Etc/UTC"
+      TZ: "Europe/Moscow"
+      EMAILTO: "DBA-PostgreSQL@my_name.ru"
+      EMAIL_SERVER: "mail.name.ru"
+      EMAIL_HOSTNAME: "noreplay@my_host.ru"
+      BACKUP_THREADS: "4"
+      BACKUP_MODE: "delta"
+
+  pgbouncer:
+#    image: grufos/pgbouncer:1.15
+    build:
+      context: ./docker-pgbouncer
+      dockerfile: Dockerfile
+    volumes:
+      - "/etc/pgbouncer1/:/etc/pgbouncer/"
+      - "/var/log/pgbouncer1:/var/log/pgbouncer"
+      - "/etc/localtime:/etc/localtime"
+    ports:
+      - "6433:6432"
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+# если в каталоге файлов есть файлы настройки то указанные ниже переменные не обрабатываются 
+# если файлы настройки не указываются, то нужно передать в переменных параметры подключения.
+# 1-й вариант - использование передачи через URI подключения к серверу
+#      - DATABASE_URL=postgresql://postgres:qweasdzxc@127.0.0.1:5432
+# 2-й вариант - отдельные переменные 
+# Обязательно нужно указывать DB_PASSWORD
+      - DB_PASSWORD=qweasdzxc
+#      - DB_HOST=127.0.0.1
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+
+  mamonsu:
+    build:
+      context: ./docker-mamonsu
+      dockerfile: Dockerfile
+
+    volumes:
+      - "/mnt/pgbak2/:/mnt/pgbak/"
+      - "/var/log/mamonsu1:/var/log/mamonsu"
+      - "/etc/mamonsu1/:/etc/mamonsu/"
+
+    environment:
+#      TZ: "Etc/UTC"
+      TZ: "Europe/Moscow"
+      PGPASSWORD: qweasdzxc
+#      PGHOST: 127.0.0.1
+      PGHOST: postgres
+      PGPORT: 5432
+      MAMONSU_PASSWORD: 1234512345
+      ZABBIX_SERVER_IP: zbxprxy.server.ru
+      ZABBIX_SERVER_PORT: 10051
+      CLIENT_HOSTNAME: my_host.server.ru
+      MAMONSU_AGENTHOST: 127.0.0.1
+      INTERVAL_PGBUFFERCACHE: 1200
+      PGPROBACKUP_ENABLED: "False"
+
+    restart: always
+    ports:
+      - "10051:10051"
+      - "10052:10052"
+
+    depends_on:
+      - postgres
 ```

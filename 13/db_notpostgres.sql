@@ -5,13 +5,14 @@ SET default_transaction_read_only = off;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 
+-- ========================================================================== --
+
 -- Upgrade pg_dbo_timestamp;
 CREATE EXTENSION IF NOT EXISTS pg_dbo_timestamp SCHEMA public;
 ALTER EXTENSION pg_dbo_timestamp UPDATE;
 
 ALTER EVENT TRIGGER dbots_tg_on_ddl_event DISABLE;
 ALTER EVENT TRIGGER dbots_tg_on_drop_event DISABLE;
-
 
 \if :IS_POSTGIS_VERSION
   -- Upgrade PostGIS (includes raster)
@@ -146,6 +147,7 @@ DROP EXTENSION IF EXISTS plpgsql_check;
 CREATE EXTENSION IF NOT EXISTS plpgsql_check SCHEMA public;
 
 -- ========================================================================== --
+
 DROP SERVER IF EXISTS dblink_postgres cascade;
 DROP SERVER IF EXISTS fdw_postgres cascade;
 
@@ -189,7 +191,7 @@ CREATE FOREIGN TABLE IF NOT EXISTS cron.job
    command text NOT NULL,
    nodename text NOT NULL,
    nodeport integer NOT NULL,
-   database text NOT NULL,
+   "database" text NOT NULL,
    username text NOT NULL,
    active boolean NOT NULL,
    jobname name
@@ -202,7 +204,7 @@ CREATE FOREIGN TABLE IF NOT EXISTS cron.job_run_details
    jobid bigint ,
    runid bigint NOT NULL,
    job_pid integer ,
-   database text ,
+   "database" text ,
    username text ,
    command text ,
    status text ,
@@ -213,88 +215,132 @@ CREATE FOREIGN TABLE IF NOT EXISTS cron.job_run_details
   SERVER fdw_postgres
   OPTIONS (schema_name 'cron', table_name 'job_run_details');
 --
-CREATE OR REPLACE FUNCTION cron.schedule(
-    schedule text,
-    command text)
+CREATE OR REPLACE FUNCTION cron.schedule(schedule text, command text)
   RETURNS bigint AS
 $BODY$
-   select jobid
-   from dblink('dblink_postgres', format('insert into cron.job (schedule, command, "database", username) values(%s, %s, %s, %s) returning jobid;',
-                                         quote_nullable(schedule), quote_nullable(command), quote_nullable(current_database()), quote_nullable(current_user)
-                                        )
-              ) as (jobid bigint);
+   insert into cron.job (jobid, schedule, command, "database", username, nodename, nodeport, active) 
+                  values((select coalesce(max(jobid)+1, 1) from cron.job),
+                          schedule, command, current_database(), current_user, 'localhost', inet_server_port(), true)
+   returning jobid;
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
 COMMENT ON FUNCTION cron.schedule(text,text) IS 'schedule a pg_cron job without job name';
-
-CREATE OR REPLACE FUNCTION cron.schedule(
-    job_name name,
-    schedule text,
-    command text)
+--
+CREATE OR REPLACE FUNCTION cron.schedule(job_name name, schedule text, command text)
   RETURNS bigint AS
 $BODY$
-   select jobid
-   from dblink('dblink_postgres', format('insert into cron.job (schedule, command, "database", username, jobname) values(%s, %s, %s, %s, %s) returning jobid;',
-                                         quote_nullable(schedule), quote_nullable(command), quote_nullable(current_database()), quote_nullable(current_user), quote_nullable(job_name)
-                                        )
-              ) as (jobid bigint);
+   insert into cron.job (jobid, schedule, command, "database", username, jobname, nodename, nodeport, active)
+                  values((select coalesce(max(jobid)+1, 1) from cron.job), 
+                          schedule, command, current_database(), current_user, job_name, 'localhost', inet_server_port(), true)
+   returning jobid;
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
 COMMENT ON FUNCTION cron.schedule(name,text,text) IS 'schedule a pg_cron job with job name';
-
+--
+CREATE OR REPLACE FUNCTION cron.schedule(job_name name, schedule text, command text, "database" text, username text, active boolean)
+  RETURNS bigint AS
+$BODY$
+   insert into cron.job (jobid, schedule, command, "database", username, jobname, active, nodename, nodeport)
+                  values((select coalesce(max(jobid)+1, 1) from cron.job), 
+                          schedule, command, "database", username, job_name, active, 'localhost', inet_server_port())
+   returning jobid;
+$BODY$
+  LANGUAGE sql VOLATILE STRICT
+  COST 100;
+COMMENT ON FUNCTION cron.schedule(name,text,text,text,text,boolean) IS 'schedule a pg_cron job with full parameters';
+--
 CREATE OR REPLACE FUNCTION cron.unschedule(job_id bigint)
   RETURNS boolean AS
 $BODY$
-   select unschedule
-   from dblink('dblink_postgres', 'select cron.unschedule(' || job_id || '::bigint);'
-              ) as (unschedule boolean);
+   with _del as (delete from cron.job where jobid = job_id returning jobid)
+   select count(*)=1 from _del;
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
 COMMENT ON FUNCTION cron.unschedule(int8) IS 'unschedule a pg_cron job as number job';
-
+--
 CREATE OR REPLACE FUNCTION cron.unschedule(job_name name)
   RETURNS boolean AS
 $BODY$
-   select unschedule
-   from dblink('dblink_postgres', 'select cron.unschedule(' || quote_nullable(job_name) || ');'
-              ) as (unschedule boolean);
+   with _del as (delete from cron.job where jobname = job_name returning jobid)
+   select count(*)=1 from _del;
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
 COMMENT ON FUNCTION cron.unschedule(name) IS 'unschedule a pg_cron job as job name';
-
-GRANT ALL ON SCHEMA cron TO postgres;
+--
+CREATE OR REPLACE FUNCTION cron.alter_job(
+    job_id bigint,
+    schedule text DEFAULT NULL::text,
+    command text DEFAULT NULL::text,
+    "database" text DEFAULT NULL::text,
+    username text DEFAULT NULL::text,
+    active boolean DEFAULT NULL::boolean,
+    job_name name DEFAULT NULL::name
+    )
+RETURNS void AS
+$BODY$
+  update cron.job set schedule   = alter_job.schedule   where jobid=alter_job.job_id and alter_job.schedule is not null;
+  update cron.job set command    = alter_job.command    where jobid=alter_job.job_id and alter_job.command is not null;
+  update cron.job set "database" = alter_job."database" where jobid=alter_job.job_id and alter_job."database" is not null;
+  update cron.job set username   = alter_job.username   where jobid=alter_job.job_id and alter_job.username is not null;
+  update cron.job set active     = alter_job.active     where jobid=alter_job.job_id and alter_job.active is not null;
+  update cron.job set jobname    = alter_job.job_name   where jobid=alter_job.job_id and alter_job.job_name is not null;
+$BODY$
+  LANGUAGE sql VOLATILE
+  COST 100;
+COMMENT ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) IS 'Alter the job identified by job_id. Any option left as NULL will not be modified.';
+--
 GRANT ALL ON SCHEMA cron TO deploy;
 GRANT USAGE ON SCHEMA cron TO write_group;
-
+--
+GRANT ALL ON TABLE cron.job TO deploy;
+GRANT ALL ON TABLE cron.job TO write_group;
+--
+GRANT ALL ON TABLE cron.job_run_details TO deploy;
+GRANT ALL ON TABLE cron.job_run_details TO write_group;
+--
+GRANT USAGE ON SCHEMA pg_catalog TO deploy;
+GRANT USAGE ON SCHEMA pg_catalog TO write_group;
+--
 GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO write_group;
 GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO deploy;
-GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO deploy;
+--
 GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text) TO write_group;
 GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text) TO deploy;
+--
+GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text,text,text,boolean) TO write_group;
+GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text,text,text,boolean) TO deploy;
+--
 GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO write_group;
 GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO deploy;
+--
+GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO write_group;
+GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO deploy;
+--
+GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) TO write_group;
+GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) TO deploy;
 
 -- ========================================================================== --
-DROP TEXT SEARCH CONFIGURATION IF EXISTS public.fts_snowball_en_ru_sw;
 
+DROP TEXT SEARCH CONFIGURATION IF EXISTS public.fts_snowball_en_ru_sw;
+--
 DROP TEXT SEARCH CONFIGURATION IF EXISTS public.fts_hunspell_en_ru;
 DROP TEXT SEARCH CONFIGURATION IF EXISTS public.fts_aot_en_ru;
-
+--
 DROP TEXT SEARCH DICTIONARY IF EXISTS public.english_hunspell_shared;
 DROP TEXT SEARCH DICTIONARY IF EXISTS public.russian_hunspell_shared;
 DROP TEXT SEARCH DICTIONARY IF EXISTS public.russian_aot_shared;
-
+--
 DROP TEXT SEARCH CONFIGURATION IF EXISTS public.fts_hunspell_en_ru_sw;
 DROP TEXT SEARCH CONFIGURATION IF EXISTS public.fts_aot_en_ru_sw;
-
+--
 DROP TEXT SEARCH DICTIONARY IF EXISTS public.english_hunspell_shared_sw;
 DROP TEXT SEARCH DICTIONARY IF EXISTS public.russian_hunspell_shared_sw;
 DROP TEXT SEARCH DICTIONARY IF EXISTS public.russian_aot_shared_sw;
+
 -- ========================================================================== --
 
 \if :is_shared_ispell_loaded
@@ -430,6 +476,7 @@ ALTER TEXT SEARCH CONFIGURATION public.fts_snowball_en_ru_sw
 COMMENT ON TEXT SEARCH CONFIGURATION public.fts_snowball_en_ru_sw IS 'FTS snowball configuration for russian language based on tsparser with stopwords';
 
 -- ========================================================================== --
+
 \endif
 
 GRANT CONNECT, CREATE ON DATABASE :"DB" TO deploy;
@@ -499,3 +546,5 @@ ALTER EVENT TRIGGER dbots_tg_on_ddl_event ENABLE;
 ALTER EVENT TRIGGER dbots_tg_on_drop_event ENABLE;
 
 -- ========================================================================= --
+
+GRANT CONNECT ON DATABASE :"DB" TO mamonsu;

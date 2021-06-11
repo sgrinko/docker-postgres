@@ -3,14 +3,6 @@
 # $1 - 'amcheck' включить доп.проверку кластера при помощи расширения amcheck
 # $2 - 'heapallindexed' будет дополнительно проверено, что в индексе действительно представлены все кортежи кучи, которые должны в него попасть
 
-if [ "$EMAILTO" = "" ]; then
-    EMAILTO="DBA-PostgreSQL@interfax.ru"
-fi
-
-if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=extra.devel.ifx
-fi
-
 if [ "$EMAIL_HOSTNAME" = "" ]; then
     EMAIL_HOSTNAME=`hostname`
     EMAIL_HOSTNAME="noreplay@${EMAIL_HOSTNAME}.ru"

@@ -8,7 +8,6 @@ SET standard_conforming_strings = on;
 CREATE OR REPLACE VIEW public.vw_who AS
  SELECT pa.pid,
     pg_blocking_pids(pa.pid) AS blocked_by,
-    pa.leader_pid,
     pa.state,
     now() - pa.xact_start AS ts_age,
     clock_timestamp() - pa.xact_start AS xact_age,
@@ -25,7 +24,7 @@ CREATE OR REPLACE VIEW public.vw_who AS
     pa.query
    FROM pg_stat_activity pa
   WHERE pa.pid <> pg_backend_pid()
-  ORDER BY pa.datname, pa.state, pa.xact_start, pa.leader_pid NULLS FIRST;
+  ORDER BY pa.datname, pa.state, pa.xact_start;
 
 CREATE OR REPLACE VIEW public.vw_locks AS
     SELECT pg_locks.pid,

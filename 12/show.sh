@@ -3,14 +3,6 @@
 # $1 - yes/no (the sign for send to email)
 # $2 - list of email recipients (separated by a space)
 
-if [ "$EMAILTO" = "" ]; then
-    EMAILTO="PostgreSQL@my_company.ru"
-fi
-
-if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=mail.my_company.ru
-fi
-
 if [ "$EMAIL_HOSTNAME" = "" ]; then
     EMAIL_HOSTNAME=`hostname`
     EMAIL_HOSTNAME="noreplay@${EMAIL_HOSTNAME}.ru"

@@ -29,14 +29,15 @@ RUN apt-get update \
            pg-probackup-$PG_MAJOR \
            postgresql-plpython3-$PG_MAJOR \
            postgresql-$PG_MAJOR-repack \
-           postgresql-$PG_MAJOR-cron \
+#           postgresql-$PG_MAJOR-cron \ # временно отключен. собираем из исходников
            postgresql-$PG_MAJOR-pldebugger \
            postgresql-$PG_MAJOR-plpgsql-check \
-           postgresql-$PG_MAJOR-rum \
+#           postgresql-$PG_MAJOR-rum \ # временно отключен. собираем из исходников
            postgresql-$PG_MAJOR-tds-fdw \
       && sed -i.bak "s/text size = 64512/text size = 1262485504/g" /etc/freetds/freetds.conf \
       && cd /tmp \
       && mkdir -p build_ext \
+      # hunspell_dicts
       && cd build_ext \
       && git clone https://github.com/postgrespro/hunspell_dicts \
       && cd hunspell_dicts \
@@ -49,25 +50,42 @@ RUN apt-get update \
       && cd ../hunspell_ru_ru_aot \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
+      # pg_tsparser
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/pg_tsparser \
       && cd pg_tsparser \
       && make USE_PGXS=1 install \
+      # shared_ispell
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/shared_ispell \
       && cd shared_ispell \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
+      # pg_variables
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/pg_variables \
       && cd pg_variables \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
+      # rum
+      && cd /tmp/build_ext \
+      && git clone https://github.com/postgrespro/rum \
+      && cd rum \
+      && make USE_PGXS=1 install \
+      # pg_cron
+      && cd /tmp/build_ext \
+      && git clone https://github.com/citusdata/pg_cron \
+      && cd pg_cron \
+      && make \
+      && make install \
+      # pg_dbo_timestamp
       && cd /tmp/build_ext \
       && git clone https://github.com/pgcodekeeper/pg_dbo_timestamp \
       && cd pg_dbo_timestamp \
       && make USE_PGXS=1 install \
+      # clean build directory...
       && rm -rf /tmp/build_ext \
+      # create backup path ...
       && mkdir -p $BACKUP_PATH \
       && chmod 0777 $BACKUP_PATH \
       && chmod 0777 /var/log/postgresql \

@@ -4,14 +4,6 @@
 # $2 - the type mode backup: delta (default), page or full (create full backup)
 # $3 - the sign stream wal mode backup: yes (default) or other to sign "archive"
 
-if [ "$EMAILTO" = "" ]; then
-    EMAILTO="PostgreSQL@my_company.ru"
-fi
-
-if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=mail.my_company.ru
-fi
-
 if [ "$EMAIL_HOSTNAME" = "" ]; then
     EMAIL_HOSTNAME=`hostname`
     EMAIL_HOSTNAME="noreplay@${EMAIL_HOSTNAME}.ru"
