@@ -8,7 +8,6 @@ FROM postgres:12.7
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
-RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
@@ -17,8 +16,9 @@ ENV DEBIAN_RELEASE buster
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
 
-RUN apt-get update \
-      && apt-get install -y wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop \
+RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8 \
+      && apt-get update \
+      && apt-get install -y wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop mc \
       && echo "deb [arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
       && wget -O - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | apt-key add - \
       && apt-get update \
@@ -29,10 +29,8 @@ RUN apt-get update \
            pg-probackup-$PG_MAJOR \
            postgresql-plpython3-$PG_MAJOR \
            postgresql-$PG_MAJOR-repack \
-#           postgresql-$PG_MAJOR-cron \ # временно отключен. собираем из исходников
            postgresql-$PG_MAJOR-pldebugger \
            postgresql-$PG_MAJOR-plpgsql-check \
-#           postgresql-$PG_MAJOR-rum \ # временно отключен. собираем из исходников
            postgresql-$PG_MAJOR-tds-fdw \
       && sed -i.bak "s/text size = 64512/text size = 1262485504/g" /etc/freetds/freetds.conf \
       && cd /tmp \

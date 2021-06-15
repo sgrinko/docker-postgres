@@ -4,6 +4,14 @@
 # $2 - the type mode backup: delta (default), page or full (create full backup)
 # $3 - the sign stream wal mode backup: yes (default) or other to sign "archive"
 
+if [ "$EMAILTO" = "" ]; then
+    EMAILTO="DBA-PostgreSQL@interfax.ru"
+fi
+
+if [ "$EMAIL_SERVER" = "" ]; then
+    EMAIL_SERVER=extra.devel.ifx
+fi
+
 if [ "$EMAIL_HOSTNAME" = "" ]; then
     EMAIL_HOSTNAME=`hostname`
     EMAIL_HOSTNAME="noreplay@${EMAIL_HOSTNAME}.ru"
@@ -56,13 +64,13 @@ COUNT_DIR=`ls -l $BACKUP_PATH | grep "^d" | wc -l`
 
 if [ "$COUNT_DIR" = "0" ]; then
    # init new directory for backup
-   /usr/bin/pg_probackup-$PG_MAJOR init -B $BACKUP_PATH -D $PGDATA
+   su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR init -B $BACKUP_PATH -D $PGDATA"
 fi
 
 if ! [ -d "$BACKUP_PATH/$PG_MAJOR" ]; then
    # create new instance for claster
-   /usr/bin/pg_probackup-$PG_MAJOR add-instance -B $BACKUP_PATH --instance=$PG_MAJOR -D $PGDATA
-   /usr/bin/pg_probackup-$PG_MAJOR set-config -B $BACKUP_PATH --instance=$PG_MAJOR --retention-window=7 --compress-algorithm=zlib --compress-level=6
+   su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR add-instance -B $BACKUP_PATH --instance=$PG_MAJOR -D $PGDATA"
+   su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR set-config -B $BACKUP_PATH --instance=$PG_MAJOR --retention-window=7 --compress-algorithm=zlib --compress-level=6"
 fi
 
 IS_FULL=`su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR show --instance=$PG_MAJOR --backup-path=$BACKUP_PATH | grep FULL | grep 'OK\|DONE'"`
