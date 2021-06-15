@@ -287,15 +287,16 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
 
 ```	
 docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
-		   -e POSTGRES_PASSWORD=qweasdzxc \
-		   -e POSTGRES_HOST_AUTH_METHOD=trust \
-		   -e DEPLOY_PASSWORD=cxzdsaewq \
-		   -e TZ="Etc/UTC" \
+       -e POSTGRES_PASSWORD=qweasdzxc \
+       -e POSTGRES_HOST_AUTH_METHOD=trust \
+       -e DEPLOY_PASSWORD=cxzdsaewq \
+       -e TZ="Etc/UTC" \
        -v "/var/lib/pgsql/13/data:/var/lib/postgresql/data" \
        -v "/var/log/postgresql:/var/log/postgresql" \
-		   grufos/postgres:13.3 \
-		   -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
-		   -c shared_ispell.max_size=70MB
+       -v "/mnt/pgbak2:/mnt/pgbak" \
+       grufos/postgres:13.3 \
+       -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
+       -c shared_ispell.max_size=70MB
 ```
 
 остановка контейнера
