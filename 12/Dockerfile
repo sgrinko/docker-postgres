@@ -88,6 +88,11 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && chmod 0777 $BACKUP_PATH \
       && chmod 0777 /var/log/postgresql \
       && chown postgres:postgres $BACKUP_PATH /var/log/postgresql \
+      # make files on folder tsearch_data for mapping ...
+      && cd /usr/share/postgresql/$PG_MAJOR/tsearch_data \
+      && tar -czf /usr/share/postgresql/$PG_MAJOR/tsearch_data.tar.gz . \
+      && cd / \
+      && ln -s /usr/share/postgresql/$PG_MAJOR/tsearch_data /usr/share/postgresql/ \
       # clean all unused package...
       && rm -rf /var/lib/apt/lists/* \
       && apt-mark hold llvm-7 llvm-7-runtime \
@@ -113,5 +118,7 @@ COPY ./check_cluster.sh /usr/local/bin
 COPY ./pg_hba.conf /var/lib/postgresql
 COPY ./pg_ident.conf /var/lib/postgresql
 COPY ./postgresql.conf /var/lib/postgresql
+COPY ./postgres /usr/local/sbin
 
-RUN chmod +x /usr/local/bin/*.sh
+RUN chmod +x /usr/local/bin/*.sh \
+    && chmod +x /usr/local/sbin/postgres
