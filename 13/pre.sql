@@ -2,12 +2,14 @@ SET default_transaction_read_only = off;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 
+-- create DB template_extension
 select not exists(select true FROM pg_catalog.pg_database where datname='template_extension') as is_check
 \gset
 \if :is_check
     CREATE DATABASE template_extension IS_TEMPLATE true;
 \endif
 
+-- create role deploy
 select not exists(select true FROM pg_catalog.pg_roles where rolname='deploy') as is_check
 \gset
 \if :is_check
@@ -15,6 +17,7 @@ select not exists(select true FROM pg_catalog.pg_roles where rolname='deploy') a
 \endif
 ALTER ROLE deploy WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD :'DEPLOY_PASSWORD';
 
+-- create role replicator
 select not exists(select true FROM pg_catalog.pg_roles where rolname='replicator') as is_check
 \gset
 \if :is_check
@@ -22,6 +25,7 @@ select not exists(select true FROM pg_catalog.pg_roles where rolname='replicator
 \endif
 ALTER ROLE replicator WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN REPLICATION NOBYPASSRLS;
 
+-- create group readonly_group
 select not exists(select true FROM pg_catalog.pg_roles where rolname='readonly_group') as is_check
 \gset
 \if :is_check
@@ -29,6 +33,7 @@ select not exists(select true FROM pg_catalog.pg_roles where rolname='readonly_g
 \endif
 ALTER ROLE readonly_group WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB NOLOGIN NOREPLICATION NOBYPASSRLS;
 
+-- create group write_group
 select not exists(select true FROM pg_catalog.pg_roles where rolname='write_group') as is_check
 \gset
 \if :is_check
@@ -36,6 +41,7 @@ select not exists(select true FROM pg_catalog.pg_roles where rolname='write_grou
 \endif
 ALTER ROLE write_group WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB NOLOGIN NOREPLICATION NOBYPASSRLS;
 
+-- create group execution_group
 select not exists(select true FROM pg_catalog.pg_roles where rolname='execution_group') as is_check
 \gset
 \if :is_check
@@ -43,6 +49,14 @@ select not exists(select true FROM pg_catalog.pg_roles where rolname='execution_
 \endif
 ALTER ROLE execution_group WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB NOLOGIN NOREPLICATION NOBYPASSRLS;
 
+-- added role mamonsu
+select not exists(select * from pg_roles where rolname = 'mamonsu') as is_check
+\gset
+\if :is_check
+    CREATE ROLE mamonsu LOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+\endif
+
+-- added rights
 GRANT CONNECT ON DATABASE postgres TO deploy;
 GRANT CONNECT ON DATABASE postgres TO readonly_group;
 GRANT CONNECT ON DATABASE postgres TO write_group;
