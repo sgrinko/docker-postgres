@@ -487,21 +487,31 @@ GRANT CONNECT ON DATABASE :"DB" TO execution_group;
 -- ========================================================================= --
 
 -- ==== привелегии по умолчанию ====
-ALTER DEFAULT PRIVILEGES GRANT INSERT, SELECT, UPDATE, DELETE ON TABLES    TO write_group;
-ALTER DEFAULT PRIVILEGES GRANT USAGE,  SELECT, UPDATE         ON SEQUENCES TO write_group;
-ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON TYPES     TO write_group;
+ALTER DEFAULT PRIVILEGES GRANT ALL                            ON TABLES    TO write_group;
+ALTER DEFAULT PRIVILEGES GRANT ALL                            ON SEQUENCES TO write_group;
+ALTER DEFAULT PRIVILEGES GRANT ALL                            ON TYPES     TO write_group;
+ALTER DEFAULT PRIVILEGES GRANT ALL                            ON SCHEMAS   TO write_group;
+--
 ALTER DEFAULT PRIVILEGES GRANT SELECT                         ON TABLES    TO readonly_group;
 ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON SEQUENCES TO readonly_group;
 ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON TYPES     TO readonly_group;
-ALTER DEFAULT PRIVILEGES GRANT EXECUTE                        ON FUNCTIONS TO execution_group;
+ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON SCHEMAS   TO readonly_group;
 --
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT INSERT, SELECT, UPDATE, DELETE ON TABLES    TO write_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE,  SELECT, UPDATE         ON SEQUENCES TO write_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE                          ON TYPES     TO write_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT SELECT                         ON TABLES    TO readonly_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE                          ON SEQUENCES TO readonly_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE                          ON TYPES     TO readonly_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT EXECUTE                        ON FUNCTIONS TO execution_group;
+ALTER DEFAULT PRIVILEGES GRANT EXECUTE                        ON FUNCTIONS TO execution_group;
+ALTER DEFAULT PRIVILEGES GRANT EXECUTE                        ON ROUTINES  TO execution_group;
+--
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT ALL            ON TABLES    TO write_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT ALL            ON SEQUENCES TO write_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT ALL            ON TYPES     TO write_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT ALL            ON SCHEMAS   TO write_group;
+--
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT SELECT         ON TABLES    TO readonly_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE          ON SEQUENCES TO readonly_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE          ON TYPES     TO readonly_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE          ON SCHEMAS   TO readonly_group;
+--
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT EXECUTE        ON FUNCTIONS TO execution_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT EXECUTE        ON ROUTINES  TO execution_group;
 --
 
 -- ==== права на схемы (временно для ORM) ====
