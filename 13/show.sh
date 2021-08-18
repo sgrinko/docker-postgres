@@ -3,6 +3,14 @@
 # $1 - yes/no (the sign for send to email)
 # $2 - list of email recipients (separated by a space)
 
+if [ "$EMAILTO" = "" ]; then
+    EMAILTO="DBA-PostgreSQL@mycompany.ru"
+fi
+
+if [ "$EMAIL_SERVER" = "" ]; then
+    EMAIL_SERVER=extra.mycompany.ru
+fi
+
 if [ "$EMAIL_HOSTNAME" = "" ]; then
     EMAIL_HOSTNAME=`hostname`
     EMAIL_HOSTNAME="noreplay@${EMAIL_HOSTNAME}.ru"

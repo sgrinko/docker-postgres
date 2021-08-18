@@ -1,15 +1,20 @@
 #!/bin/bash
 
-# $1 - the count threads: 4 (default) or this number
-# $2 - the type mode backup: delta (default), page or full (create full backup)
-# $3 - the sign stream wal mode backup: yes (default) or other to sign "archive"
+# $1 - the type mode backup: delta or page (default) or full (create full backup)
+# $2 - the sign stream wal mode backup: "yes" or "stream" (default) or other to sign "archive"
+# $3 - the count threads: 4 (default) or this number
+
+# calculate day week
+DOW=$(date +%u)
+
+# Processing external variables
 
 if [ "$EMAILTO" = "" ]; then
-    EMAILTO="DBA-PostgreSQL@interfax.ru"
+    EMAILTO="DBA-PostgreSQL@mycompany.ru"
 fi
 
 if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=extra.devel.ifx
+    EMAIL_SERVER=extra.mycompany.ru
 fi
 
 if [ "$EMAIL_HOSTNAME" = "" ]; then
@@ -26,13 +31,13 @@ if [ "$BACKUP_THREADS" = "" ]; then
 fi
 
 if [ "$BACKUP_MODE" = "" ]; then
-    BACKUP_MODE=delta
+    BACKUP_MODE=page
 fi
 
 if [ "$BACKUP_STREAM" = "" ]; then
-    BACKUP_STREAM="yes"
+    BACKUP_STREAM="stream"
 fi
-if [ "$BACKUP_STREAM" = "yes" ]; then
+if [[ "$BACKUP_STREAM" = "yes" || "$BACKUP_STREAM" = "stream" ]]; then
     BACKUP_STREAM="--stream"
 else
     BACKUP_STREAM=""
@@ -42,21 +47,34 @@ if [ "$BACKUP_PATH" = "" ]; then
     BACKUP_PATH="/mnt/pgbak"
 fi
 
+# Processing external parameters. Priority!
+
+if [ "$DOW" = "6" ] ; then
+    # make a full backup once a week (Saturday)
+    BACKUP_MODE=full
+else
+    # make an incremental backup on other days of the week
+    BACKUP_MODE=page
+fi
+
 if [ "$1" != "" ]; then
-    BACKUP_THREADS=$1
+    # The backup creation mode is given forcibly
+    BACKUP_MODE=$1
 fi
 
+BACKUP_STREAM="--stream"
 if [ "$2" != "" ]; then
-    BACKUP_MODE=$2
-fi
-
-if [ "$3" != "" ]; then
-  if [ "$3" = "yes" ]; then
+  if [[ "$2" = "stream" || "$2" = "yes" ]]; then
       BACKUP_STREAM="--stream"
   else
       BACKUP_STREAM=""
   fi
 fi
+
+if [ "$3" != "" ]; then
+    BACKUP_THREADS=$3
+fi
+
 
 cd $BACKUP_PATH
 
@@ -80,18 +98,21 @@ if ! [ -f $PGDATA/archive_active.trigger ] ; then
     su - postgres -c "touch $PGDATA/archive_active.trigger"
 fi
 
-# calculate day week
-DOW=$(date +%u)
-
 if [[ "$IS_FULL" = "" || $BACKUP_MODE = "full" ]] ; then
-    su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR backup -d postgres --backup-path=$BACKUP_PATH -b full $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired"
+    # Full backup needs to be forcibly
+    su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR backup --backup-path=$BACKUP_PATH -b full $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired --delete-wal"
 else
-   if [ "$DOW" = "6" ] ; then
-      su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR backup -d postgres --backup-path=$BACKUP_PATH -b full $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired --delete-wal"
-   else
-      su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR backup -d postgres --backup-path=$BACKUP_PATH -b $BACKUP_MODE $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired --delete-wal"
-   fi
+    # Backup type depends on day or input parameter
+    su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR backup --backup-path=$BACKUP_PATH -b $BACKUP_MODE $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired --delete-wal"
+    STATUS=`su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR show --backup-path=$BACKUP_PATH --instance=$PG_MAJOR --format=json | jq -c '.[].backups[0].status'"`
+    LAST_STATE=${STATUS//'"'/''}
+    if [[ "$LAST_STATE" = "CORRUPT" || "$LAST_STATE" = "ERROR" || "$LAST_STATE" = "ORPHAN" ]] ; then
+        # You need to run a full backup, as an error occurred with incremental
+        # Perhaps the loss of the segment at Failover ...
+        su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR backup --backup-path=$BACKUP_PATH -b full $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired --delete-wal"
+    fi
 fi
+
 
 # collecting statistics on backups
 su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR show --backup-path=$BACKUP_PATH > ~postgres/backups.txt"

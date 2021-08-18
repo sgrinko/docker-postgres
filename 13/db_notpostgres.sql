@@ -16,7 +16,7 @@ ALTER EVENT TRIGGER dbots_tg_on_drop_event DISABLE;
 
 \if :IS_POSTGIS_VERSION
   -- Upgrade PostGIS (includes raster)
-  CREATE EXTENSION IF NOT EXISTS postgis VERSION :'POSTGIS_VERSION';
+  CREATE EXTENSION IF NOT EXISTS postgis VERSION :'POSTGIS_VERSION' SCHEMA public;
   ALTER EXTENSION postgis  UPDATE TO :'POSTGIS_VERSION';
 
   -- Upgrade Topology
@@ -24,20 +24,20 @@ ALTER EVENT TRIGGER dbots_tg_on_drop_event DISABLE;
   ALTER EXTENSION postgis_topology UPDATE TO :'POSTGIS_VERSION';
 
   -- Install Tiger dependencies in case not already installed
-  CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+  CREATE EXTENSION IF NOT EXISTS fuzzystrmatch SCHEMA public;
 
   -- Upgrade US Tiger Geocoder
   CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder VERSION :'POSTGIS_VERSION';
   ALTER EXTENSION postgis_tiger_geocoder UPDATE TO :'POSTGIS_VERSION';
 \else
   -- Install PostGIS (includes raster)
-  CREATE EXTENSION IF NOT EXISTS postgis;
+  CREATE EXTENSION IF NOT EXISTS postgis SCHEMA public;
 
   -- Install Topology
   CREATE EXTENSION IF NOT EXISTS postgis_topology;
 
   -- Install Tiger dependencies in case not already installed
-  CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+  CREATE EXTENSION IF NOT EXISTS fuzzystrmatch SCHEMA public;
 
   -- Install US Tiger Geocoder
   CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
@@ -140,7 +140,7 @@ ALTER EXTENSION pg_tsparser UPDATE;
 
 -- Upgrade pg_repack
 DROP EXTENSION IF EXISTS pg_repack;
-CREATE EXTENSION IF NOT EXISTS pg_repack;
+CREATE EXTENSION IF NOT EXISTS pg_repack SCHEMA public;
 
 -- Upgrade plpgsql_check
 DROP EXTENSION IF EXISTS plpgsql_check;
@@ -487,31 +487,21 @@ GRANT CONNECT ON DATABASE :"DB" TO execution_group;
 -- ========================================================================= --
 
 -- ==== привелегии по умолчанию ====
-ALTER DEFAULT PRIVILEGES GRANT ALL                            ON TABLES    TO write_group;
-ALTER DEFAULT PRIVILEGES GRANT ALL                            ON SEQUENCES TO write_group;
-ALTER DEFAULT PRIVILEGES GRANT ALL                            ON TYPES     TO write_group;
-ALTER DEFAULT PRIVILEGES GRANT ALL                            ON SCHEMAS   TO write_group;
---
+ALTER DEFAULT PRIVILEGES GRANT INSERT, SELECT, UPDATE, DELETE ON TABLES    TO write_group;
+ALTER DEFAULT PRIVILEGES GRANT USAGE,  SELECT, UPDATE         ON SEQUENCES TO write_group;
+ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON TYPES     TO write_group;
 ALTER DEFAULT PRIVILEGES GRANT SELECT                         ON TABLES    TO readonly_group;
 ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON SEQUENCES TO readonly_group;
 ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON TYPES     TO readonly_group;
-ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON SCHEMAS   TO readonly_group;
---
 ALTER DEFAULT PRIVILEGES GRANT EXECUTE                        ON FUNCTIONS TO execution_group;
-ALTER DEFAULT PRIVILEGES GRANT EXECUTE                        ON ROUTINES  TO execution_group;
 --
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT ALL            ON TABLES    TO write_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT ALL            ON SEQUENCES TO write_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT ALL            ON TYPES     TO write_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT ALL            ON SCHEMAS   TO write_group;
---
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT SELECT         ON TABLES    TO readonly_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE          ON SEQUENCES TO readonly_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE          ON TYPES     TO readonly_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE          ON SCHEMAS   TO readonly_group;
---
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT EXECUTE        ON FUNCTIONS TO execution_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT EXECUTE        ON ROUTINES  TO execution_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT INSERT, SELECT, UPDATE, DELETE ON TABLES    TO write_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE,  SELECT, UPDATE         ON SEQUENCES TO write_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE                          ON TYPES     TO write_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT SELECT                         ON TABLES    TO readonly_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE                          ON SEQUENCES TO readonly_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE                          ON TYPES     TO readonly_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT EXECUTE                        ON FUNCTIONS TO execution_group;
 --
 
 -- ==== права на схемы (временно для ORM) ====
