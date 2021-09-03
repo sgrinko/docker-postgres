@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# $1 - yes/no (the sign for send to email)
+# $1 - yes/no (the sign for send to email, yes - default)
 # $2 - list of email recipients (separated by a space)
 
 if [ "$EMAILTO" = "" ]; then

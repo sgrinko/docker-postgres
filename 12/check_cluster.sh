@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# $1 - 'amcheck' включить доп.проверку кластера при помощи расширения amcheck
-# $2 - 'heapallindexed' будет дополнительно проверено, что в индексе действительно представлены все кортежи кучи, которые должны в него попасть
+# $1 - 'amcheck' Enable an additional cluster with an Amcheck extension
+# $2 - 'heapallindexed' It will be additionally verified that in the index, all the cortices of the heaps that should get into it
 
 if [ "$EMAILTO" = "" ]; then
     EMAILTO="DBA-PostgreSQL@mycompany.ru"
