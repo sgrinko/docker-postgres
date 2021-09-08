@@ -11,7 +11,7 @@ LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
-ENV POSTGIS_VERSION 3.1.3+dfsg-1~exp1.pgdg100+1
+ENV POSTGIS_VERSION 3.1.4+dfsg-1.pgdg100+1
 ENV DEBIAN_RELEASE buster
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
