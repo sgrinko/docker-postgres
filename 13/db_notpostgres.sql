@@ -227,7 +227,7 @@ $BODY$
   COST 100;
 COMMENT ON FUNCTION cron.schedule(text,text) IS 'schedule a pg_cron job without job name';
 --
-CREATE OR REPLACE FUNCTION cron.schedule(job_name name, schedule text, command text)
+CREATE OR REPLACE FUNCTION cron.schedule(job_name text, schedule text, command text)
   RETURNS bigint AS
 $BODY$
    insert into cron.job (jobid, schedule, command, "database", username, jobname, nodename, nodeport, active)
@@ -237,9 +237,9 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
-COMMENT ON FUNCTION cron.schedule(name,text,text) IS 'schedule a pg_cron job with job name';
+COMMENT ON FUNCTION cron.schedule(text,text,text) IS 'schedule a pg_cron job with job name';
 --
-CREATE OR REPLACE FUNCTION cron.schedule(job_name name, schedule text, command text, "database" text, username text, active boolean)
+CREATE OR REPLACE FUNCTION cron.schedule_in_database(job_name text, schedule text, command text, "database" text, username text, active boolean)
   RETURNS bigint AS
 $BODY$
    insert into cron.job (jobid, schedule, command, "database", username, jobname, active, nodename, nodeport)
@@ -249,7 +249,7 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
-COMMENT ON FUNCTION cron.schedule(name,text,text,text,text,boolean) IS 'schedule a pg_cron job with full parameters';
+COMMENT ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) IS 'schedule a pg_cron job with full parameters';
 --
 CREATE OR REPLACE FUNCTION cron.unschedule(job_id bigint)
   RETURNS boolean AS
@@ -308,11 +308,11 @@ GRANT USAGE ON SCHEMA pg_catalog TO write_group;
 GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO write_group;
 GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO deploy;
 --
-GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text) TO deploy;
+GRANT EXECUTE ON FUNCTION cron.schedule(text,text,text) TO write_group;
+GRANT EXECUTE ON FUNCTION cron.schedule(text,text,text) TO deploy;
 --
-GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text,text,text,boolean) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text,text,text,boolean) TO deploy;
+GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO write_group;
+GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO deploy;
 --
 GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO write_group;
 GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO deploy;
