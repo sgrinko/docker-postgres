@@ -400,7 +400,7 @@ ALTER TEXT SEARCH CONFIGURATION public.fts_hunspell_en_ru
     ALTER MAPPING FOR hword, hword_part, word 
     WITH russian_hunspell_shared, russian_stem;
 
-COMMENT ON TEXT SEARCH CONFIGURATION public.fts_hunspell_en_ru IS 'FTS hunspell Lebedev configuration for russian language based on shared_ispell';
+COMMENT ON TEXT SEARCH CONFIGURATION public.fts_hunspell_en_ru IS 'FTS hunspell Lebedev configuration for russian language based on shared_ispell without stopwords';
 
 -- ========================================================================== --
 
@@ -418,7 +418,7 @@ ALTER TEXT SEARCH CONFIGURATION public.fts_aot_en_ru
     ALTER MAPPING FOR hword, hword_part, word 
     WITH russian_aot_shared, russian_stem;
 
-COMMENT ON TEXT SEARCH CONFIGURATION public.fts_aot_en_ru IS 'FTS hunspell AOT configuration for russian language based on shared_ispell';
+COMMENT ON TEXT SEARCH CONFIGURATION public.fts_aot_en_ru IS 'FTS hunspell AOT configuration for russian language based on shared_ispell without stopwords';
 
 -- ========================================================================== --
 
@@ -437,7 +437,7 @@ ALTER TEXT SEARCH CONFIGURATION public.fts_hunspell_en_ru_sw
     ALTER MAPPING FOR hword, hword_part, word 
     WITH russian_hunspell_shared_sw, russian_stem;
 
-COMMENT ON TEXT SEARCH CONFIGURATION public.fts_hunspell_en_ru_sw IS 'FTS hunspell Lebedev configuration for russian language based on shared_ispell without stopwords';
+COMMENT ON TEXT SEARCH CONFIGURATION public.fts_hunspell_en_ru_sw IS 'FTS hunspell Lebedev configuration for russian language based on shared_ispell with stopwords';
 
 -- ========================================================================== --
 
@@ -455,7 +455,7 @@ ALTER TEXT SEARCH CONFIGURATION public.fts_aot_en_ru_sw
     ALTER MAPPING FOR hword, hword_part, word 
     WITH russian_aot_shared_sw, russian_stem;
 
-COMMENT ON TEXT SEARCH CONFIGURATION public.fts_aot_en_ru_sw IS 'FTS hunspell AOT configuration for russian language based on shared_ispell without stopwords';
+COMMENT ON TEXT SEARCH CONFIGURATION public.fts_aot_en_ru_sw IS 'FTS hunspell AOT configuration for russian language based on shared_ispell with stopwords';
 
 -- ========================================================================== --
 
