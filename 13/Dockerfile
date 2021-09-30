@@ -11,7 +11,6 @@ LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
-ENV POSTGIS_VERSION 3.1.4+dfsg-1.pgdg110+1
 ENV DEBIAN_RELEASE buster
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
@@ -24,8 +23,8 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && apt-get update \
       && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
       && apt-get install -y --no-install-recommends \
-           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR=$POSTGIS_VERSION \
-           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts=$POSTGIS_VERSION \
+           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
+           postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR-scripts \
            pg-probackup-$PG_MAJOR \
            postgresql-plpython3-$PG_MAJOR \
            postgresql-$PG_MAJOR-repack \
