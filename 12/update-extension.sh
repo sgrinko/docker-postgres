@@ -29,9 +29,9 @@ for DB in "$POSTGRES_DB" template_extension "${@}"; do
     if [ "$DB" = "postgres" ] ; then
         su - postgres -c "psql --dbname=\"$DB\" -f /usr/local/bin/db_postgres.sql"
     else
-        su - postgres -c "psql --dbname=\"$DB\" -f /usr/local/bin/db_notpostgres.sql -v IS_POSTGIS_VERSION=true -v POSTGIS_VERSION=\"$POSTGIS_VERSION\" -v DB=\"$DB\" -v DEV_SCHEMA=\"$DEV_SCHEMA\" -v POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\""
+        su - postgres -c "psql --dbname=\"$DB\" -f /usr/local/bin/db_notpostgres.sql -v IS_POSTGIS_VERSION=true -v POSTGIS_VERSION=\"$POSTGIS_VERSION\" -v DEV_SCHEMA=\"$DEV_SCHEMA\" -v POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\""
         if [ "$DB" != "template_extension" ] ; then
-            su - postgres -c "psql --dbname=\"$DB\" -f /usr/local/bin/db_target.sql -v DB=\"$DB\" -v DEV_SCHEMA=\"$DEV_SCHEMA\""
+            su - postgres -c "psql --dbname=\"$DB\" -f /usr/local/bin/db_target.sql -v DEV_SCHEMA=\"$DEV_SCHEMA\""
         fi
     fi
 done

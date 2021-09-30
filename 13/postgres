@@ -11,4 +11,4 @@ if [ "$COUNT_DIR" = "1" ]; then
 fi
 
 # start postgres process ...
-/usr/lib/postgresql/$PG_MAJOR/bin/postgres
+/usr/lib/postgresql/$PG_MAJOR/bin/postgres ${@}

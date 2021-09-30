@@ -5,6 +5,9 @@ SET default_transaction_read_only = off;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 
+select current_database() as dbconnect \gset
+select rolname as role_deploy from pg_roles where rolname ilike '%deploy%' limit 1 \gset
+
 -- ========================================================================== --
 
 -- Upgrade pg_dbo_timestamp;
@@ -156,28 +159,32 @@ CREATE SERVER IF NOT EXISTS dblink_postgres
   FOREIGN DATA WRAPPER dblink_fdw
   OPTIONS (host 'localhost', port '5432', dbname 'postgres');
 -- user
+SET log_statement='none';
 CREATE USER MAPPING IF NOT EXISTS FOR postgres
   SERVER dblink_postgres
   OPTIONS (user 'postgres', password :'POSTGRES_PASSWORD');
+SET log_statement='ddl';
 
 -- FDW: в БД postgres
 CREATE SERVER IF NOT EXISTS fdw_postgres
   FOREIGN DATA WRAPPER postgres_fdw
   OPTIONS (host 'localhost', port '5432', dbname 'postgres');
 -- user
+SET log_statement='none';
 CREATE USER MAPPING IF NOT EXISTS FOR postgres
   SERVER fdw_postgres
   OPTIONS (user 'postgres', password :'POSTGRES_PASSWORD');
+SET log_statement='ddl';
 
 -- ========================================================================== --
 
 ALTER EVENT TRIGGER dbots_tg_on_ddl_event ENABLE;
 GRANT SELECT ON public.dbots_object_timestamps TO write_group;
 GRANT SELECT ON public.dbots_object_timestamps TO readonly_group;
-GRANT SELECT ON public.dbots_object_timestamps TO deploy;
+GRANT SELECT ON public.dbots_object_timestamps TO :"role_deploy";
 GRANT SELECT ON public.dbots_event_data TO readonly_group;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.dbots_event_data TO write_group;
-GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON public.dbots_event_data TO deploy;
+GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON public.dbots_event_data TO :"role_deploy";
 GRANT SELECT ON public.dbots_event_data TO readonly_group;
 
 -- ========================================================================== --
@@ -293,36 +300,38 @@ $BODY$
   COST 100;
 COMMENT ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) IS 'Alter the job identified by job_id. Any option left as NULL will not be modified.';
 --
-GRANT ALL ON SCHEMA cron TO deploy;
+GRANT ALL ON SCHEMA cron TO :"role_deploy";
 GRANT USAGE ON SCHEMA cron TO write_group;
 --
-GRANT ALL ON TABLE cron.job TO deploy;
+GRANT ALL ON TABLE cron.job TO :"role_deploy";
 GRANT ALL ON TABLE cron.job TO write_group;
 --
-GRANT ALL ON TABLE cron.job_run_details TO deploy;
+GRANT ALL ON TABLE cron.job_run_details TO :"role_deploy";
 GRANT ALL ON TABLE cron.job_run_details TO write_group;
 --
-GRANT USAGE ON SCHEMA pg_catalog TO deploy;
-GRANT USAGE ON SCHEMA pg_catalog TO write_group;
---
 GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO deploy;
+GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO execution_group;
+GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO :"role_deploy";
 --
 GRANT EXECUTE ON FUNCTION cron.schedule(text,text,text) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.schedule(text,text,text) TO deploy;
+GRANT EXECUTE ON FUNCTION cron.schedule(text,text,text) TO execution_group;
+GRANT EXECUTE ON FUNCTION cron.schedule(text,text,text) TO :"role_deploy";
 --
 GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO deploy;
+GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO execution_group;
+GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO :"role_deploy";
 --
 GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO deploy;
+GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO execution_group;
+GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO :"role_deploy";
 --
 GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO deploy;
+GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO execution_group;
+GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO :"role_deploy";
 --
 GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) TO deploy;
-
+GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) TO execution_group;
+GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) TO :"role_deploy";
 -- ========================================================================== --
 
 DROP TEXT SEARCH CONFIGURATION IF EXISTS public.fts_snowball_en_ru_sw;
@@ -479,32 +488,61 @@ COMMENT ON TEXT SEARCH CONFIGURATION public.fts_snowball_en_ru_sw IS 'FTS snowba
 
 \endif
 
-GRANT CONNECT, CREATE ON DATABASE :"DB" TO deploy;
-GRANT CONNECT ON DATABASE :"DB" TO readonly_group;
-GRANT CONNECT ON DATABASE :"DB" TO write_group;
-GRANT CONNECT ON DATABASE :"DB" TO execution_group;
+GRANT CONNECT, CREATE ON DATABASE  :"dbconnect" TO :"role_deploy";
+GRANT CONNECT ON DATABASE  :"dbconnect" TO readonly_group;
+GRANT CONNECT ON DATABASE  :"dbconnect" TO write_group;
+GRANT CONNECT ON DATABASE  :"dbconnect" TO execution_group;
+GRANT CONNECT ON DATABASE  :"dbconnect" TO read_procedure_group;
 
 -- ========================================================================= --
 
 -- ==== привелегии по умолчанию ====
-ALTER DEFAULT PRIVILEGES GRANT INSERT, SELECT, UPDATE, DELETE ON TABLES    TO write_group;
-ALTER DEFAULT PRIVILEGES GRANT USAGE,  SELECT, UPDATE         ON SEQUENCES TO write_group;
-ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON TYPES     TO write_group;
-ALTER DEFAULT PRIVILEGES GRANT SELECT                         ON TABLES    TO readonly_group;
-ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON SEQUENCES TO readonly_group;
-ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON TYPES     TO readonly_group;
-ALTER DEFAULT PRIVILEGES GRANT EXECUTE                        ON FUNCTIONS TO execution_group;
+ALTER DEFAULT PRIVILEGES GRANT ALL                            ON TABLES    TO write_group;
+ALTER DEFAULT PRIVILEGES GRANT ALL                            ON SEQUENCES TO write_group;
+ALTER DEFAULT PRIVILEGES GRANT ALL                            ON TYPES     TO write_group;
+ALTER DEFAULT PRIVILEGES GRANT ALL                            ON SCHEMAS   TO write_group;
 --
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT INSERT, SELECT, UPDATE, DELETE ON TABLES    TO write_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE,  SELECT, UPDATE         ON SEQUENCES TO write_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE                          ON TYPES     TO write_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT SELECT                         ON TABLES    TO readonly_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE                          ON SEQUENCES TO readonly_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT USAGE                          ON TYPES     TO readonly_group;
-ALTER DEFAULT PRIVILEGES FOR ROLE deploy GRANT EXECUTE                        ON FUNCTIONS TO execution_group;
+ALTER DEFAULT PRIVILEGES GRANT SELECT                         ON TABLES    TO readonly_group;
+ALTER DEFAULT PRIVILEGES GRANT SELECT                         ON SEQUENCES TO readonly_group;
+ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON TYPES     TO readonly_group;
+ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON SCHEMAS   TO readonly_group;
+--
+ALTER DEFAULT PRIVILEGES GRANT EXECUTE                        ON FUNCTIONS TO execution_group;
+ALTER DEFAULT PRIVILEGES GRANT EXECUTE                        ON ROUTINES  TO execution_group;
+ALTER DEFAULT PRIVILEGES GRANT USAGE                          ON SCHEMAS   TO read_procedure_group;
+--
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT ALL            ON TABLES    TO write_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT ALL            ON SEQUENCES TO write_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT ALL            ON TYPES     TO write_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT ALL            ON SCHEMAS   TO write_group;
+--
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT SELECT         ON TABLES    TO readonly_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT SELECT         ON SEQUENCES TO readonly_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT USAGE          ON TYPES     TO readonly_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT USAGE          ON SCHEMAS   TO readonly_group;
+--
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT EXECUTE        ON FUNCTIONS TO execution_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT EXECUTE        ON ROUTINES  TO execution_group;
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" GRANT USAGE          ON SCHEMAS   TO read_procedure_group;
 --
 
 -- ==== права на схемы (временно для ORM) ====
+
+-- создаем отдельную схему разработки
+CREATE SCHEMA IF NOT EXISTS :"DEV_SCHEMA" ;
+ALTER SCHEMA :"DEV_SCHEMA" OWNER TO :"role_deploy";
+COMMENT ON SCHEMA :"DEV_SCHEMA" IS 'developer base schema';
+
+-- выдаём USAGE права на все схемы для используемых групповых ролей
+select 'GRANT USAGE ON SCHEMA ' || quote_ident(nspname) || ' TO ' || quote_ident(r) || ';'
+from pg_namespace, unnest(ARRAY['write_group', 'readonly_group', 'execution_group', 'read_procedure_group', :'role_deploy']) as r 
+where nspname not in ('pg_toast','repack','pgbouncer')
+\gexec
+
+-- и даем полные права  для роли деплоя
+GRANT ALL   ON SCHEMA :"DEV_SCHEMA" TO :"role_deploy";
+GRANT ALL   ON SCHEMA public TO :"role_deploy";
+
 -- не даём читать текст функций поле prosrc
 REVOKE SELECT ON pg_catalog.pg_proc FROM execution_group;
 -- но даём читать все столбцы кроме prosrc
@@ -512,33 +550,56 @@ SELECT 'GRANT SELECT(' || string_agg(attname, ',') || ') ON pg_catalog.pg_proc T
 FROM pg_catalog.pg_attribute a
 WHERE attrelid = 'pg_catalog.pg_proc'::regclass AND NOT attisdropped AND attname NOT IN ('tableoid','cmax','xmax','cmin','xmin', 'ctid', 'prosrc')
 \gexec
--- роль deploy может читать эту таблицу
-GRANT SELECT ON TABLE pg_catalog.pg_proc TO deploy;
 
--- создаем отдельную схему разработки
-CREATE SCHEMA IF NOT EXISTS :"DEV_SCHEMA" ;
-ALTER SCHEMA :"DEV_SCHEMA" OWNER TO deploy;
--- и даем в неё права
-GRANT ALL ON SCHEMA :"DEV_SCHEMA" TO deploy;
-GRANT USAGE ON SCHEMA :"DEV_SCHEMA" TO write_group;
-GRANT USAGE ON SCHEMA :"DEV_SCHEMA" TO execution_group;
-GRANT USAGE ON SCHEMA :"DEV_SCHEMA" TO readonly_group;
-COMMENT ON SCHEMA :"DEV_SCHEMA" IS 'developer base schema';
+-- роль для чтения исходных кодов имеет нужные права                                                                                                            
+GRANT SELECT ON TABLE pg_catalog.pg_proc TO read_procedure_group;
+GRANT SELECT ON TABLE information_schema.routines TO read_procedure_group;
+GRANT EXECUTE ON FUNCTION pg_catalog.pg_get_functiondef(oid) TO read_procedure_group;
 
-GRANT ALL   ON SCHEMA public TO deploy;
-GRANT USAGE ON SCHEMA public TO write_group;
-GRANT USAGE ON SCHEMA public TO execution_group;
-GRANT USAGE ON SCHEMA public TO readonly_group;
+GRANT SELECT ON TABLE pg_catalog.pg_proc TO :"role_deploy";
+GRANT SELECT ON TABLE information_schema.routines TO :"role_deploy";
+GRANT EXECUTE ON FUNCTION pg_catalog.pg_get_functiondef(oid) TO :"role_deploy";
 
-GRANT USAGE ON SCHEMA information_schema TO deploy;
-GRANT USAGE ON SCHEMA information_schema TO write_group;
-GRANT USAGE ON SCHEMA information_schema TO execution_group;
-GRANT USAGE ON SCHEMA information_schema TO readonly_group;
+-- ==== убирание public доступов ====
 
-GRANT USAGE ON SCHEMA pg_catalog TO deploy;
-GRANT USAGE ON SCHEMA pg_catalog TO write_group;
-GRANT USAGE ON SCHEMA pg_catalog TO execution_group;
-GRANT USAGE ON SCHEMA pg_catalog TO readonly_group;
+-- убираем все права для роли public
+-- запрещаем кому бы то ни было создавать временные объекты для роли public
+-- запрещаем кому бы то ни было подключаться к БД для роли public
+select 'REVOKE ALL ON DATABASE ' || datname || '  FROM public;'
+from pg_database
+where datname not in ('template1','template0')
+\gexec
+
+-- запрещаем вновь создаваемым объектам получать любое право для роли public для таблиц
+ALTER DEFAULT PRIVILEGES REVOKE ALL PRIVILEGES ON TABLES FROM public;
+
+-- запрещаем вновь создаваемым объектам получать любое право для роли public для последовательностей
+ALTER DEFAULT PRIVILEGES REVOKE ALL PRIVILEGES ON SEQUENCES FROM public;
+
+-- запрещаем вновь создаваемым объектам получать любое право для роли public для типов
+ALTER DEFAULT PRIVILEGES REVOKE ALL PRIVILEGES ON TYPES FROM public;
+
+-- запрещаем вновь создаваемым объектам получать любое право для роли public на функции
+ALTER DEFAULT PRIVILEGES REVOKE ALL PRIVILEGES ON FUNCTIONS FROM public;
+
+-- запрещаем вновь создаваемым объектам получать любое право для роли public для таблиц
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" REVOKE ALL PRIVILEGES ON TABLES FROM public;
+
+-- запрещаем вновь создаваемым объектам получать любое право для роли public для последовательностей
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" REVOKE ALL PRIVILEGES ON SEQUENCES FROM public;
+
+-- запрещаем вновь создаваемым объектам получать любое право для роли public на функции
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" REVOKE ALL PRIVILEGES ON FUNCTIONS FROM public;
+
+-- запрещаем вновь создаваемым объектам получать любое право для роли public для типов
+ALTER DEFAULT PRIVILEGES FOR ROLE :"role_deploy" REVOKE ALL PRIVILEGES ON TYPES FROM public;
+
+-- Запрещаем кому бы то ни было читать код процедур для роли public
+REVOKE ALL PRIVILEGES ON pg_catalog.pg_proc, information_schema.routines FROM PUBLIC;
+REVOKE ALL PRIVILEGES ON FUNCTION pg_catalog.pg_get_functiondef(oid) FROM PUBLIC;
+
+-- видеть код и структуру данных для роли public
+REVOKE ALL PRIVILEGES ON SCHEMA pg_catalog, information_schema, public FROM PUBLIC;
 
 -- ========================================================================= --
 
@@ -547,4 +608,4 @@ ALTER EVENT TRIGGER dbots_tg_on_drop_event ENABLE;
 
 -- ========================================================================= --
 
-GRANT CONNECT ON DATABASE :"DB" TO mamonsu;
+GRANT CONNECT ON DATABASE :"dbconnect" TO mamonsu;

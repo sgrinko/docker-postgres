@@ -11,7 +11,7 @@ LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
-ENV POSTGIS_VERSION 3.1.4+dfsg-1.pgdg100+1
+ENV POSTGIS_VERSION 3.1.4+dfsg-1.pgdg110+1
 ENV DEBIAN_RELEASE buster
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
@@ -95,7 +95,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && ln -s /usr/share/postgresql/$PG_MAJOR/tsearch_data /usr/share/postgresql/ \
       # clean all unused package...
       && rm -rf /var/lib/apt/lists/* \
-      && apt-mark hold llvm-7 llvm-7-runtime \
+      && apt-mark hold llvm-11 llvm-11-runtime \
       && apt-get purge -y gcc freetds-dev git make postgresql-server-dev-$PG_MAJOR libicu-dev *-dev* \
       && apt-get -f install \
       && apt-get -y autoremove \
@@ -121,4 +121,5 @@ COPY ./postgresql.conf /var/lib/postgresql
 COPY ./postgres /usr/local/sbin
 
 RUN chmod +x /usr/local/bin/*.sh \
-    && chmod +x /usr/local/sbin/postgres
+    && chmod +x /usr/local/sbin/postgres \
+    && chmod +x /docker-entrypoint-initdb.d/*.sh

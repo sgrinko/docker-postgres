@@ -10,12 +10,16 @@ select not exists(select true FROM pg_catalog.pg_database where datname='templat
 \endif
 
 -- create role deploy
-select not exists(select true FROM pg_catalog.pg_roles where rolname='deploy') as is_check
+-- роль для деплоя, т.е. все объекты в БД должны быть созданы от нее, а не от пользователя postgres (sa)
+select not exists(select true FROM pg_catalog.pg_roles where rolname ilike '%deploy%') as is_check
 \gset
 \if :is_check
     CREATE ROLE deploy;
+    SET log_statement='none';
+    ALTER ROLE deploy WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD :'DEPLOY_PASSWORD';
+    SET log_statement='ddl';
 \endif
-ALTER ROLE deploy WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD :'DEPLOY_PASSWORD';
+select rolname as role_deploy from pg_roles where rolname ilike '%deploy%' limit 1 \gset
 
 -- create role replicator
 select not exists(select true FROM pg_catalog.pg_roles where rolname='replicator') as is_check
@@ -49,6 +53,14 @@ select not exists(select true FROM pg_catalog.pg_roles where rolname='execution_
 \endif
 ALTER ROLE execution_group WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB NOLOGIN NOREPLICATION NOBYPASSRLS;
 
+-- create group read_procedure_group
+select not exists(select true FROM pg_catalog.pg_roles where rolname='read_procedure_group') as is_check
+\gset
+\if :is_check
+    CREATE ROLE read_procedure_group;
+\endif
+ALTER ROLE read_procedure_group WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB NOLOGIN NOREPLICATION NOBYPASSRLS;
+
 -- added role mamonsu
 select not exists(select * from pg_roles where rolname = 'mamonsu') as is_check
 \gset
@@ -57,7 +69,8 @@ select not exists(select * from pg_roles where rolname = 'mamonsu') as is_check
 \endif
 
 -- added rights
-GRANT CONNECT ON DATABASE postgres TO deploy;
+GRANT CONNECT ON DATABASE postgres TO :"role_deploy";
 GRANT CONNECT ON DATABASE postgres TO readonly_group;
 GRANT CONNECT ON DATABASE postgres TO write_group;
 GRANT CONNECT ON DATABASE postgres TO execution_group;
+GRANT CONNECT ON DATABASE postgres TO read_procedure_group;
