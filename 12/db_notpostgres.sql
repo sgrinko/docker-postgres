@@ -154,27 +154,43 @@ CREATE EXTENSION IF NOT EXISTS plpgsql_check SCHEMA public;
 DROP SERVER IF EXISTS dblink_postgres cascade;
 DROP SERVER IF EXISTS fdw_postgres cascade;
 
+-- DBLINK позволяет выполнять автономные запросы
 -- DBLINK: в БД postgres
 CREATE SERVER IF NOT EXISTS dblink_postgres
   FOREIGN DATA WRAPPER dblink_fdw
   OPTIONS (host 'localhost', port '5432', dbname 'postgres');
 -- user
-SET log_statement='none';
 CREATE USER MAPPING IF NOT EXISTS FOR postgres
   SERVER dblink_postgres
-  OPTIONS (user 'postgres', password :'POSTGRES_PASSWORD');
-SET log_statement='ddl';
+  OPTIONS (user 'postgres');
 
+-- DBLINK: в текущую БД
+CREATE SERVER IF NOT EXISTS dblink_currentdb
+  FOREIGN DATA WRAPPER dblink_fdw
+  OPTIONS (host 'localhost', port '5432', dbname :'dbconnect');
+-- user
+CREATE USER MAPPING IF NOT EXISTS FOR postgres
+  SERVER dblink_currentdb
+  OPTIONS (user 'postgres');
+
+-- FDW поддерживает транзакции
 -- FDW: в БД postgres
 CREATE SERVER IF NOT EXISTS fdw_postgres
   FOREIGN DATA WRAPPER postgres_fdw
   OPTIONS (host 'localhost', port '5432', dbname 'postgres');
 -- user
-SET log_statement='none';
 CREATE USER MAPPING IF NOT EXISTS FOR postgres
   SERVER fdw_postgres
-  OPTIONS (user 'postgres', password :'POSTGRES_PASSWORD');
-SET log_statement='ddl';
+  OPTIONS (user 'postgres');
+
+-- FDW: в текущую БД
+CREATE SERVER IF NOT EXISTS fdw_currentdb
+  FOREIGN DATA WRAPPER postgres_fdw
+  OPTIONS (host 'localhost', port '5432', dbname :'dbconnect');
+-- user
+CREATE USER MAPPING IF NOT EXISTS FOR postgres
+  SERVER fdw_currentdb
+  OPTIONS (user 'postgres');
 
 -- ========================================================================== --
 
@@ -225,43 +241,51 @@ CREATE FOREIGN TABLE IF NOT EXISTS cron.job_run_details
 CREATE OR REPLACE FUNCTION cron.schedule(schedule text, command text)
   RETURNS bigint AS
 $BODY$
-   insert into cron.job (jobid, schedule, command, "database", username, nodename, nodeport, active) 
-                  values((select coalesce(max(jobid)+1, 1) from cron.job),
-                          schedule, command, current_database(), current_user, 'localhost', inet_server_port(), true)
-   returning jobid;
+   select jobid
+   from public.dblink('dblink_postgres', format('insert into cron.job (schedule, command, "database", username) values(%s, %s, %s, %s) returning jobid;', 
+                                                quote_nullable(schedule), quote_nullable(command), quote_nullable(current_database()), quote_nullable(current_user)
+                                              ) 
+                     ) as (jobid bigint);
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
 COMMENT ON FUNCTION cron.schedule(text,text) IS 'schedule a pg_cron job without job name';
 --
-CREATE OR REPLACE FUNCTION cron.schedule(job_name text, schedule text, command text)
+CREATE OR REPLACE FUNCTION cron.schedule(job_name name, schedule text, command text)
   RETURNS bigint AS
 $BODY$
-   insert into cron.job (jobid, schedule, command, "database", username, jobname, nodename, nodeport, active)
-                  values((select coalesce(max(jobid)+1, 1) from cron.job), 
-                          schedule, command, current_database(), current_user, job_name, 'localhost', inet_server_port(), true)
-   returning jobid;
+   select jobid
+   from public.dblink('dblink_postgres', format('insert into cron.job (schedule, command, "database", username, jobname) values(%s, %s, %s, %s, %s) returning jobid;', 
+                                                quote_nullable(schedule), quote_nullable(command), quote_nullable(current_database()), quote_nullable(current_user),
+                                                quote_nullable(job_name)
+                                              ) 
+                     ) as (jobid bigint);
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
-COMMENT ON FUNCTION cron.schedule(text,text,text) IS 'schedule a pg_cron job with job name';
+COMMENT ON FUNCTION cron.schedule(name, text, text) IS 'schedule a pg_cron job with job name';
 --
 CREATE OR REPLACE FUNCTION cron.schedule_in_database(job_name text, schedule text, command text, "database" text, username text, active boolean)
   RETURNS bigint AS
 $BODY$
-   insert into cron.job (jobid, schedule, command, "database", username, jobname, active, nodename, nodeport)
-                  values((select coalesce(max(jobid)+1, 1) from cron.job), 
-                          schedule, command, "database", username, job_name, active, 'localhost', inet_server_port())
-   returning jobid;
+   select jobid
+   from public.dblink('dblink_postgres', format('insert into cron.job (schedule, command, "database", username, jobname, active) values(%s, %s, %s, %s, %s, %s) returning jobid;', 
+                                                quote_nullable(schedule), quote_nullable(command), quote_nullable("database"), quote_nullable(username), 
+                                                quote_nullable(job_name), active
+                                              ) 
+                     ) as (jobid bigint);
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
-COMMENT ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) IS 'schedule a pg_cron job with full parameters';
+COMMENT ON FUNCTION cron.schedule_in_database(text, text, text, text, text, boolean) IS 'schedule a pg_cron job with full parameters';
 --
 CREATE OR REPLACE FUNCTION cron.unschedule(job_id bigint)
   RETURNS boolean AS
 $BODY$
-   with _del as (delete from cron.job where jobid = job_id returning jobid)
+   with _del as (
+     delete from cron.job where jobid = job_id 
+     returning jobid
+   )
    select count(*)=1 from _del;
 $BODY$
   LANGUAGE sql VOLATILE STRICT
@@ -271,7 +295,10 @@ COMMENT ON FUNCTION cron.unschedule(int8) IS 'unschedule a pg_cron job as number
 CREATE OR REPLACE FUNCTION cron.unschedule(job_name name)
   RETURNS boolean AS
 $BODY$
-   with _del as (delete from cron.job where jobname = job_name returning jobid)
+   with _del as (
+     delete from cron.job where jobname = job_name and username = current_user
+     returning jobid
+   )
    select count(*)=1 from _del;
 $BODY$
   LANGUAGE sql VOLATILE STRICT
@@ -313,9 +340,9 @@ GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO write_group;
 GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO execution_group;
 GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO :"role_deploy";
 --
-GRANT EXECUTE ON FUNCTION cron.schedule(text,text,text) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.schedule(text,text,text) TO execution_group;
-GRANT EXECUTE ON FUNCTION cron.schedule(text,text,text) TO :"role_deploy";
+GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text) TO write_group;
+GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text) TO execution_group;
+GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text) TO :"role_deploy";
 --
 GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO write_group;
 GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO execution_group;
