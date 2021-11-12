@@ -152,6 +152,7 @@ CREATE EXTENSION IF NOT EXISTS plpgsql_check SCHEMA public;
 -- ========================================================================== --
 
 DROP SERVER IF EXISTS dblink_postgres cascade;
+DROP SERVER IF EXISTS dblink_currentdb cascade;
 DROP SERVER IF EXISTS fdw_postgres cascade;
 
 -- DBLINK позволяет выполнять автономные запросы
@@ -183,15 +184,6 @@ CREATE USER MAPPING IF NOT EXISTS FOR postgres
   SERVER fdw_postgres
   OPTIONS (user 'postgres');
 
--- FDW: в текуцщую БД
-CREATE SERVER IF NOT EXISTS fdw_currentdb
-  FOREIGN DATA WRAPPER postgres_fdw
-  OPTIONS (host 'localhost', port '5432', dbname :'dbconnect');
--- user
-CREATE USER MAPPING IF NOT EXISTS FOR postgres
-  SERVER fdw_currentdb
-  OPTIONS (user 'postgres');
-  
 -- ========================================================================== --
 
 ALTER EVENT TRIGGER dbots_tg_on_ddl_event ENABLE;
@@ -269,7 +261,7 @@ CREATE OR REPLACE FUNCTION cron.schedule_in_database(job_name text, schedule tex
   RETURNS bigint AS
 $BODY$
    select jobid
-   from public.dblink('dblink_postgres', format('insert into cron.job (schedule, command, "database", username, jobname, active) values(%s, %s, %s, %s, %s, %s) returning jobid;', 
+   from public.dblink('dblink_postgres', format('insert into cron.job (schedule, command, "database", username, jobname, active) values(%s, %s, %s, %s, %s, ''%s'') returning jobid;', 
                                                 quote_nullable(schedule), quote_nullable(command), quote_nullable("database"), quote_nullable(username), 
                                                 quote_nullable(job_name), active
                                               ) 
@@ -520,6 +512,7 @@ GRANT CONNECT ON DATABASE  :"dbconnect" TO readonly_group;
 GRANT CONNECT ON DATABASE  :"dbconnect" TO write_group;
 GRANT CONNECT ON DATABASE  :"dbconnect" TO execution_group;
 GRANT CONNECT ON DATABASE  :"dbconnect" TO read_procedure_group;
+GRANT CONNECT ON DATABASE  :"dbconnect" TO monitoring_group;
 
 -- ========================================================================= --
 
@@ -583,6 +576,13 @@ GRANT SELECT ON TABLE pg_catalog.pg_proc TO read_procedure_group;
 GRANT SELECT ON TABLE information_schema.routines TO read_procedure_group;
 GRANT EXECUTE ON FUNCTION pg_catalog.pg_get_functiondef(oid) TO read_procedure_group;
 
+-- права на получение статистических данных
+GRANT USAGE ON SCHEMA pg_catalog to monitoring_group;
+GRANT USAGE ON SCHEMA public TO monitoring_group;
+GRANT EXECUTE ON FUNCTION public.pg_stat_statements_reset(oid, oid, bigint) TO monitoring_group;
+GRANT SELECT ON TABLE pg_catalog.pg_proc TO monitoring_group;
+
+-- роль деплоя также имеет права по чтению кода
 GRANT SELECT ON TABLE pg_catalog.pg_proc TO :"role_deploy";
 GRANT SELECT ON TABLE information_schema.routines TO :"role_deploy";
 GRANT EXECUTE ON FUNCTION pg_catalog.pg_get_functiondef(oid) TO :"role_deploy";
