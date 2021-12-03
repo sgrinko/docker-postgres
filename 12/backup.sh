@@ -10,11 +10,11 @@ DOW=$(date +%u)
 # Processing external variables
 
 if [ "$EMAILTO" = "" ]; then
-    EMAILTO="DBA-PostgreSQL@mycompany.ru"
+    EMAILTO="DBA-PostgreSQL@company.ru"
 fi
 
 if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=extra.mycompany.ru
+    EMAIL_SERVER=mail.company.ru
 fi
 
 if [ "$EMAIL_HOSTNAME" = "" ]; then
@@ -85,7 +85,7 @@ if [ "$COUNT_DIR" = "0" ]; then
    su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR init -B $BACKUP_PATH -D $PGDATA"
 fi
 
-if ! [ -d "$BACKUP_PATH/$PG_MAJOR" ]; then
+if ! [ -d "$BACKUP_PATH/backups/$PG_MAJOR" ]; then
    # create new instance for claster
    su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR add-instance -B $BACKUP_PATH --instance=$PG_MAJOR -D $PGDATA"
    su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR set-config -B $BACKUP_PATH --instance=$PG_MAJOR --retention-window=7 --compress-algorithm=zlib --compress-level=6"
@@ -112,6 +112,7 @@ else
         su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR backup --backup-path=$BACKUP_PATH -b full $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired --delete-wal"
     fi
 fi
+
 
 # collecting statistics on backups
 su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR show --backup-path=$BACKUP_PATH > ~postgres/backups.txt"

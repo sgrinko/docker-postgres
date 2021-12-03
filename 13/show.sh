@@ -4,11 +4,11 @@
 # $2 - list of email recipients (separated by a space)
 
 if [ "$EMAILTO" = "" ]; then
-    EMAILTO="DBA-PostgreSQL@mycompany.ru"
+    EMAILTO="DBA-PostgreSQL@company.ru"
 fi
 
 if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=extra.mycompany.ru
+    EMAIL_SERVER=mail.company.ru
 fi
 
 if [ "$EMAIL_HOSTNAME" = "" ]; then

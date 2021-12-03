@@ -295,7 +295,7 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
            -e POSTGRES_HOST_AUTH_METHOD=trust \
            -e DEPLOY_PASSWORD=cxzdsaewq \
            -e TZ="Etc/UTC" \
-           grufos/postgres:13.3 \
+           grufos/postgres:13.5 \
            -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
            -c shared_ispell.max_size=70MB
 ```
@@ -312,7 +312,7 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
        -v "/var/log/postgresql:/var/log/postgresql" \
        -v "/mnt/pgbak2:/mnt/pgbak" \
        -v "/usr/share/postgres/tsearch_data:/usr/share/postgresql/tsearch_data" \
-       grufos/postgres:13.3 \
+       grufos/postgres:13.5 \
        -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
        -c shared_ispell.max_size=70MB
 ```
@@ -339,7 +339,7 @@ services:
  
   postgres:
 
-#    image: grufos/postgres:13.3
+#    image: grufos/postgres:13.5
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile
@@ -385,7 +385,7 @@ services:
 
   postgres:
 
-#    image: grufos/postgres:13.3
+#    image: grufos/postgres:13.5
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile

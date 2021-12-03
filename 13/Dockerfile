@@ -4,7 +4,7 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:13.4
+FROM postgres:13.5
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
@@ -14,10 +14,11 @@ ENV POSTGIS_MAJOR 3
 ENV DEBIAN_RELEASE buster
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
+ENV RUM_VERSION 1.3.9
 
 RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8 \
       && apt-get update \
-      && apt-get install -y wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop mc \
+      && apt-get install -y wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop mc systemtap-sdt-dev \
       && echo "deb [arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
       && wget -O - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | apt-key add - \
       && apt-get update \
@@ -31,10 +32,10 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
            postgresql-$PG_MAJOR-pldebugger \
            postgresql-$PG_MAJOR-plpgsql-check \
            postgresql-$PG_MAJOR-tds-fdw \
-      && sed -i.bak "s/text size = 64512/text size = 1262485504/g" /etc/freetds/freetds.conf \
+      && sed -i "s/text size = 64512/text size = 1262485504/g" /etc/freetds/freetds.conf \
       && cd /tmp \
       && mkdir -p build_ext \
-      # hunspell_dicts
+      # ====== hunspell_dicts
       && cd build_ext \
       && git clone https://github.com/postgrespro/hunspell_dicts \
       && cd hunspell_dicts \
@@ -47,7 +48,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && cd ../hunspell_ru_ru_aot \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # pg_tsparser
+      # ====== pg_tsparser
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/pg_tsparser \
       && cd pg_tsparser \
@@ -58,43 +59,44 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && cd shared_ispell \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # pg_variables
+      # ====== pg_variables
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/pg_variables \
       && cd pg_variables \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # rum
+      # ====== rum
       && cd /tmp/build_ext \
-      && git clone https://github.com/postgrespro/rum \
+      && git clone https://github.com/postgrespro/rum --branch $RUM_VERSION  --single-branch \
       && cd rum \
+      && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # pg_cron
+      # ====== pg_cron
       && cd /tmp/build_ext \
       && git clone https://github.com/citusdata/pg_cron \
       && cd pg_cron \
       && make \
       && make install \
-      # pg_dbo_timestamp
+      # ====== pg_dbo_timestamp
       && cd /tmp/build_ext \
       && git clone https://github.com/pgcodekeeper/pg_dbo_timestamp \
       && cd pg_dbo_timestamp \
       && make USE_PGXS=1 install \
-      # clean build directory...
+      # ====== clean build directory...
       && rm -rf /tmp/build_ext \
-      # create backup path ...
+      # ====== create backup path ...
       && mkdir -p $BACKUP_PATH \
       && chmod 0777 $BACKUP_PATH \
       && chmod 0777 /var/log/postgresql \
       && chown postgres:postgres $BACKUP_PATH /var/log/postgresql \
-      # make files on folder tsearch_data for mapping ...
+      # ====== make files on folder tsearch_data for mapping ...
       && cd /usr/share/postgresql/$PG_MAJOR/tsearch_data \
       && tar -czf /usr/share/postgresql/$PG_MAJOR/tsearch_data.tar.gz . \
       && cd / \
       && ln -s /usr/share/postgresql/$PG_MAJOR/tsearch_data /usr/share/postgresql/ \
-      # clean all unused package...
+      # ====== clean all unused package...
+      && apt-mark hold llvm-11-runtime \
       && rm -rf /var/lib/apt/lists/* \
-      && apt-mark hold llvm-11 llvm-11-runtime \
       && apt-get purge -y gcc freetds-dev git make postgresql-server-dev-$PG_MAJOR libicu-dev *-dev* \
       && apt-get -f install \
       && apt-get -y autoremove \

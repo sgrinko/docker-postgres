@@ -11,6 +11,9 @@ fi
 if [ "$DEV_SCHEMA" = "" ]; then
     DEV_SCHEMA=dbo
 fi
+if [ "$EMAIL_SERVER" = "" ]; then
+    EMAIL_SERVER=mail.company.ru
+fi
 
 # Perform all actions as $POSTGRES_USER
 export PGUSER="$POSTGRES_USER"
@@ -55,12 +58,12 @@ psql -f /usr/local/bin/pre.sql -v DEPLOY_PASSWORD="$DEPLOY_PASSWORD"
 for DB in "$POSTGRES_DB" template_extension ; do
     echo "Loading extensions into $DB"
 
-    psql --dbname="$DB" -f /usr/local/bin/db_all.sql
+    psql --dbname="$DB" -f /usr/local/bin/db_all.sql -v email_server=\"$EMAIL_SERVER\"
 
     if [ "$DB" = "postgres" ] ; then
-        psql --dbname="$DB" -f /usr/local/bin/db_postgres.sql
+        psql --dbname="$DB" -f /usr/local/bin/db_postgres.sql -v email_server=\"$EMAIL_SERVER\"
     else
-        psql --dbname="$DB" -f /usr/local/bin/db_notpostgres.sql -v IS_POSTGIS_VERSION=false -v DEV_SCHEMA="$DEV_SCHEMA" -v POSTGRES_PASSWORD="$POSTGRES_PASSWORD"
+        psql --dbname="$DB" -f /usr/local/bin/db_notpostgres.sql -v IS_SETUPDB=false -v DEV_SCHEMA="$DEV_SCHEMA" -v POSTGRES_PASSWORD="$POSTGRES_PASSWORD" -v email_server=\"$EMAIL_SERVER\"
     fi
 done
 

@@ -6,7 +6,10 @@ SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 
 select current_database() as dbconnect \gset
+-- ckeck exists roles
+select rolname as role_write_group from pg_roles where rolname = 'write_group' limit 1 \gset
 select rolname as role_deploy from pg_roles where rolname ilike '%deploy%' limit 1 \gset
+select rolname as role_execution_group from pg_roles where rolname = 'execution_group' limit 1 \gset
 
 -- ========================================================================== --
 
@@ -17,21 +20,21 @@ ALTER EXTENSION pg_dbo_timestamp UPDATE;
 ALTER EVENT TRIGGER dbots_tg_on_ddl_event DISABLE;
 ALTER EVENT TRIGGER dbots_tg_on_drop_event DISABLE;
 
-\if :IS_POSTGIS_VERSION
+\if :IS_SETUPDB
   -- Upgrade PostGIS (includes raster)
-  CREATE EXTENSION IF NOT EXISTS postgis VERSION :'POSTGIS_VERSION' SCHEMA public;
-  ALTER EXTENSION postgis  UPDATE TO :'POSTGIS_VERSION';
+  CREATE EXTENSION IF NOT EXISTS postgis SCHEMA public;
+  ALTER EXTENSION postgis  UPDATE;
 
   -- Upgrade Topology
-  CREATE EXTENSION IF NOT EXISTS postgis_topology VERSION :'POSTGIS_VERSION';
-  ALTER EXTENSION postgis_topology UPDATE TO :'POSTGIS_VERSION';
+  CREATE EXTENSION IF NOT EXISTS postgis_topology;
+  ALTER EXTENSION postgis_topology UPDATE;
 
   -- Install Tiger dependencies in case not already installed
   CREATE EXTENSION IF NOT EXISTS fuzzystrmatch SCHEMA public;
 
   -- Upgrade US Tiger Geocoder
-  CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder VERSION :'POSTGIS_VERSION';
-  ALTER EXTENSION postgis_tiger_geocoder UPDATE TO :'POSTGIS_VERSION';
+  CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
+  ALTER EXTENSION postgis_tiger_geocoder UPDATE;
 \else
   -- Install PostGIS (includes raster)
   CREATE EXTENSION IF NOT EXISTS postgis SCHEMA public;
@@ -243,7 +246,7 @@ $BODY$
   COST 100;
 COMMENT ON FUNCTION cron.schedule(text,text) IS 'schedule a pg_cron job without job name';
 --
-CREATE OR REPLACE FUNCTION cron.schedule(job_name name, schedule text, command text)
+CREATE OR REPLACE FUNCTION cron.schedule(job_name text, schedule text, command text)
   RETURNS bigint AS
 $BODY$
    select jobid
@@ -255,7 +258,7 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
-COMMENT ON FUNCTION cron.schedule(name, text, text) IS 'schedule a pg_cron job with job name';
+COMMENT ON FUNCTION cron.schedule(text, text, text) IS 'schedule a pg_cron job with job name';
 --
 CREATE OR REPLACE FUNCTION cron.schedule_in_database(job_name text, schedule text, command text, "database" text, username text, active boolean)
   RETURNS bigint AS
@@ -284,7 +287,7 @@ $BODY$
   COST 100;
 COMMENT ON FUNCTION cron.unschedule(int8) IS 'unschedule a pg_cron job as number job';
 --
-CREATE OR REPLACE FUNCTION cron.unschedule(job_name name)
+CREATE OR REPLACE FUNCTION cron.unschedule(job_name text)
   RETURNS boolean AS
 $BODY$
    with _del as (
@@ -295,7 +298,7 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
-COMMENT ON FUNCTION cron.unschedule(name) IS 'unschedule a pg_cron job as job name';
+COMMENT ON FUNCTION cron.unschedule(text) IS 'unschedule a pg_cron job as job name';
 --
 CREATE OR REPLACE FUNCTION cron.alter_job(
     job_id bigint,
@@ -304,7 +307,7 @@ CREATE OR REPLACE FUNCTION cron.alter_job(
     "database" text DEFAULT NULL::text,
     username text DEFAULT NULL::text,
     active boolean DEFAULT NULL::boolean,
-    job_name name DEFAULT NULL::name
+    job_name text DEFAULT NULL::text
     )
 RETURNS void AS
 $BODY$
@@ -317,40 +320,50 @@ $BODY$
 $BODY$
   LANGUAGE sql VOLATILE
   COST 100;
-COMMENT ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) IS 'Alter the job identified by job_id. Any option left as NULL will not be modified.';
+COMMENT ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, text) IS 'Alter the job identified by job_id. Any option left as NULL will not be modified.';
 --
-GRANT ALL ON SCHEMA cron TO :"role_deploy";
-GRANT USAGE ON SCHEMA cron TO write_group;
+
+GRANT ALL ON SCHEMA cron TO postgres;
+\if :{?role_deploy}
+  GRANT ALL ON SCHEMA cron TO :role_deploy;
+\endif
+\if :{?role_write_group}
+  GRANT USAGE ON SCHEMA cron TO write_group;
+  GRANT ALL ON TABLE cron.job TO write_group;
+  GRANT ALL ON TABLE cron.job_run_details TO write_group;
+  GRANT USAGE ON SCHEMA pg_catalog TO write_group;
+  GRANT EXECUTE ON FUNCTION cron.schedule(text, text) TO write_group;
+  GRANT EXECUTE ON FUNCTION cron.schedule(text, text, text) TO write_group;
+  GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text, text, text, text, text, boolean) TO write_group;
+  GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO write_group;
+  GRANT EXECUTE ON FUNCTION cron.unschedule(text) TO write_group;
+  GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, text) TO write_group;
+\endif
 --
-GRANT ALL ON TABLE cron.job TO :"role_deploy";
-GRANT ALL ON TABLE cron.job TO write_group;
+\if :{?role_deploy}
+  GRANT ALL ON SCHEMA cron TO :"role_deploy";
+  GRANT ALL ON TABLE cron.job TO :"role_deploy";
+  GRANT ALL ON TABLE cron.job_run_details TO :"role_deploy";
+  GRANT USAGE ON SCHEMA pg_catalog TO :"role_deploy";
+  GRANT EXECUTE ON FUNCTION cron.schedule(text, text) TO :"role_deploy";
+  GRANT EXECUTE ON FUNCTION cron.schedule(text, text, text) TO :"role_deploy";
+  GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text, text, text, text, text, boolean) TO :"role_deploy";
+  GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO :"role_deploy";
+  GRANT EXECUTE ON FUNCTION cron.unschedule(text) TO :"role_deploy";
+  GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, text) TO :"role_deploy";
+\endif
 --
-GRANT ALL ON TABLE cron.job_run_details TO :"role_deploy";
-GRANT ALL ON TABLE cron.job_run_details TO write_group;
---
-GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO execution_group;
-GRANT EXECUTE ON FUNCTION cron.schedule(text,text) TO :"role_deploy";
---
-GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text) TO execution_group;
-GRANT EXECUTE ON FUNCTION cron.schedule(name,text,text) TO :"role_deploy";
---
-GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO execution_group;
-GRANT EXECUTE ON FUNCTION cron.schedule_in_database(text,text,text,text,text,boolean) TO :"role_deploy";
---
-GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO execution_group;
-GRANT EXECUTE ON FUNCTION cron.unschedule(name) TO :"role_deploy";
---
-GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO execution_group;
-GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO :"role_deploy";
---
-GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) TO write_group;
-GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) TO execution_group;
-GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, name) TO :"role_deploy";
+\if :IS_SETUPDB
+with _cmd as (
+    -- в 1-ю неделю месяца замораживаем идентификаторы транзакций, в остальные недели только собираем статистику
+    select 'vacuum JOB '||current_database() as name, '0 0 * * 0' as schedule, 'do $$ begin if date_part(''day'', now()) <= 7 then perform dblink(''dblink_currentdb'', ''VACUUM (FREEZE,ANALYZE);''); else perform dblink(''dblink_currentdb'', ''VACUUM (ANALYZE);''); end if; end $$;' as command
+)
+select cron.schedule(_cmd.name, _cmd.schedule, _cmd.command)
+from _cmd
+   left join cron.job j on j.command = _cmd.command and j."database"=current_database()
+where j.command is null
+;
+\endif
 -- ========================================================================== --
 
 DROP TEXT SEARCH CONFIGURATION IF EXISTS public.fts_snowball_en_ru_sw;

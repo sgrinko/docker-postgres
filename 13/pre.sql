@@ -68,9 +68,18 @@ select not exists(select * from pg_roles where rolname = 'mamonsu') as is_check
     CREATE ROLE mamonsu LOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
 \endif
 
+-- группа мониторинга
+select not exists(select true FROM pg_catalog.pg_roles where rolname='monitoring_group') as is_check
+\gset
+\if :is_check
+    CREATE ROLE monitoring_group;
+\endif
+ALTER ROLE monitoring_group WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB NOLOGIN NOREPLICATION NOBYPASSRLS;
+
 -- added rights
 GRANT CONNECT ON DATABASE postgres TO :"role_deploy";
 GRANT CONNECT ON DATABASE postgres TO readonly_group;
 GRANT CONNECT ON DATABASE postgres TO write_group;
 GRANT CONNECT ON DATABASE postgres TO execution_group;
 GRANT CONNECT ON DATABASE postgres TO read_procedure_group;
+GRANT CONNECT ON DATABASE postgres TO monitoring_group;

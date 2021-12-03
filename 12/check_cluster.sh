@@ -4,11 +4,11 @@
 # $2 - 'heapallindexed' It will be additionally verified that in the index, all the cortices of the heaps that should get into it
 
 if [ "$EMAILTO" = "" ]; then
-    EMAILTO="DBA-PostgreSQL@mycompany.ru"
+    EMAILTO="DBA-PostgreSQL@company.ru"
 fi
 
 if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=extra.mycompany.ru
+    EMAIL_SERVER=mail.company.ru
 fi
 
 if [ "$EMAIL_HOSTNAME" = "" ]; then
@@ -65,12 +65,12 @@ PGLOG=/var/log/postgresql
 SCRIPT_PATH=/var/lib/postgresql
 REPORT_PATH=$PGLOG/report
 
-mkdir -p $REPORT_PATH
+su - postgres -c "mkdir -p $REPORT_PATH"
 
 cd $REPORT_PATH
 
 curr_date=`eval date +%F`
-echo `date +%T` "Старт checkdb проверки" > $REPORT_PATH/${curr_date}_checkdb_result.txt
+su - postgres -c "echo `date +%T` 'Старт checkdb проверки' > $REPORT_PATH/${curr_date}_checkdb_result.txt"
 
 # дополнительные опции проверки
 ADDOPTIONS=""
