@@ -1,0 +1,23 @@
+version: '3.5'
+services:
+
+  analyze:
+    build:
+      context: ./docker-analyze
+      dockerfile: Dockerfile
+
+    volumes:
+      - "/var/log/postgresql1:/var/log/postgresql"
+      - "/var/log/pgbouncer1:/var/log/pgbouncer"
+      - "/var/log/mamonsu1:/var/log/mamonsu"
+
+    environment:
+      STAT_STATEMENTS: "false"
+#      TZ: "Etc/UTC"
+      TZ: "Europe/Moscow"
+      PGPASSWORD: qweasdzxc
+#      PGHOST: 10.10.2.139
+      PGHOST: postgres
+      PGPORT: 5432
+      PGBHOST: pgbouncer
+      PGBPORT: 6432

@@ -149,10 +149,10 @@ $ docker exec -it temp_postgres_1 update-extension.sh my_db
 
 ```
 archive_command:
-if [ -f archive_pause.trigger ]; then exit 1; else if [ -f archive_active.trigger ]; then pg_probackup-13 archive-push -B /mnt/pgbak --instance 13 --wal-file-path %p --wal-file-name %f -j 4 --batch-size=50; else exit 0; fi; fi
+if [ -f archive_pause.trigger ]; then exit 1; else if [ -f archive_active.trigger ]; then pg_probackup-14 archive-push -B /mnt/pgbak --instance 14--wal-file-path %p --wal-file-name %f -j 4 --batch-size=50; else exit 0; fi; fi
 
 restore_command:
-if [ -f archive_active.trigger ]; then pg_probackup-13 archive-get -B /mnt/pgbak --instance 13 --wal-file-path %p --wal-file-name %f; else exit 0; fi
+if [ -f archive_active.trigger ]; then pg_probackup-14 archive-get -B /mnt/pgbak --instance 14 --wal-file-path %p --wal-file-name %f; else exit 0; fi
 ```
 
 Чтобы WAL файлы начали сохраняться, нужно в каталоге данных создать файл с именем: `archive_active.trigger` (автоматически создаётся при первом вызове `backup.sh`)
@@ -295,12 +295,12 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
            -e POSTGRES_HOST_AUTH_METHOD=trust \
            -e DEPLOY_PASSWORD=cxzdsaewq \
            -e TZ="Etc/UTC" \
-           grufos/postgres:13.5 \
+           grufos/postgres:14.1 \
            -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
            -c shared_ispell.max_size=70MB
 ```
 
-запуск с указанием примапленных каталогов. Все данные кластера будут храниться вне контейнера в каталоге `/var/lib/pgsql/13/data`, а логи в каталоге `/var/log/postgresql`
+запуск с указанием примапленных каталогов. Все данные кластера будут храниться вне контейнера в каталоге `/var/lib/pgsql/14/data`, а логи в каталоге `/var/log/postgresql`
 
 ```	
 docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
@@ -308,11 +308,11 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
        -e POSTGRES_HOST_AUTH_METHOD=trust \
        -e DEPLOY_PASSWORD=cxzdsaewq \
        -e TZ="Etc/UTC" \
-       -v "/var/lib/pgsql/13/data:/var/lib/postgresql/data" \
+       -v "/var/lib/pgsql/14/data:/var/lib/postgresql/data" \
        -v "/var/log/postgresql:/var/log/postgresql" \
        -v "/mnt/pgbak2:/mnt/pgbak" \
        -v "/usr/share/postgres/tsearch_data:/usr/share/postgresql/tsearch_data" \
-       grufos/postgres:13.5 \
+       grufos/postgres:14.1 \
        -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
        -c shared_ispell.max_size=70MB
 ```
@@ -339,7 +339,7 @@ services:
  
   postgres:
 
-#    image: grufos/postgres:13.5
+#    image: grufos/postgres:14.1
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile
@@ -348,7 +348,7 @@ services:
       -c shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
       -c shared_ispell.max_size=70MB
     volumes:
-      - "/var/lib/pgsql/13_1/data:/var/lib/postgresql/data"
+      - "/var/lib/pgsql/14_1/data:/var/lib/postgresql/data"
       - "/var/log/postgresql1:/var/log/postgresql"
       - "/mnt/pgbak2/:/mnt/pgbak/"
       - "/usr/share/postgres/tsearch_data:/usr/share/postgresql/tsearch_data"
@@ -385,7 +385,7 @@ services:
 
   postgres:
 
-#    image: grufos/postgres:13.5
+#    image: grufos/postgres:14.1
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile
@@ -394,7 +394,7 @@ services:
       -c shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
       -c shared_ispell.max_size=70MB
     volumes:
-      - "/var/lib/pgsql/13_1/data:/var/lib/postgresql/data"
+      - "/var/lib/pgsql/14_1/data:/var/lib/postgresql/data"
       - "/var/log/postgresql1:/var/log/postgresql"
       - "/mnt/pgbak2/:/mnt/pgbak/"
       - "/usr/share/postgres/tsearch_data:/usr/share/postgresql/tsearch_data"
@@ -414,7 +414,7 @@ services:
       BACKUP_MODE: "delta"
 
   pgbouncer:
-#    image: grufos/pgbouncer:1.15
+#    image: grufos/pgbouncer:1.16.1
     build:
       context: ./docker-pgbouncer
       dockerfile: Dockerfile
