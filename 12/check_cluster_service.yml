@@ -22,8 +22,8 @@ services:
       PGUSER: "postgres"
       PGPASSWORD: "qweasdzxc"
       BACKUP_THREADS: "4"
-      AMCHECK: "false"
-      HEAPALLINDEXED: "false"
+      AMCHECK: "true"
+      HEAPALLINDEXED: "true"
 
     entrypoint: "/usr/local/bin/check_cluster.sh"
 

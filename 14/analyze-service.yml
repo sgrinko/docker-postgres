@@ -12,7 +12,7 @@ services:
       - "/var/log/mamonsu1:/var/log/mamonsu"
 
     environment:
-      STAT_STATEMENTS: "false"
+      STAT_STATEMENTS: "true"
 #      TZ: "Etc/UTC"
       TZ: "Europe/Moscow"
       PGPASSWORD: qweasdzxc
