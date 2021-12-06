@@ -13,7 +13,7 @@ if [ "$DEV_SCHEMA" = "" ]; then
     DEV_SCHEMA=dbo
 fi
 if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=mail.company.ru
+    EMAIL_SERVER=extra.devel.ifx
 fi
 
 export PGUSER="$POSTGRES_USER"

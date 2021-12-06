@@ -13,12 +13,12 @@ services:
 
     environment:
       TZ: "Europe/Moscow"
-      EMAILTO: "DBA-PostgreSQL@company.ru"
-      EMAIL_SERVER: "mail.company.ru"
+      EMAILTO: "DBA-PostgreSQL@interfax.ru"
+      EMAIL_SERVER: "extra.devel.ifx"
       EMAIL_HOSTNAME: "noreplay@myhost.ru"
       EMAIL_SEND: "no"
       PGHOST: "postgres"
-      PGPORT: "5433"
+      PGPORT: "5432"
       PGUSER: "postgres"
       PGPASSWORD: "qweasdzxc"
       BACKUP_THREADS: "4"

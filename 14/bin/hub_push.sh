@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # pgbouncer
 echo "========="
 echo "pgbouncer"
@@ -68,6 +70,6 @@ if ! docker image ls | grep "grufos/mamonsu" ; then
     echo "    push ..."
     docker tag docker_mamonsu:latest grufos/mamonsu:latest
     docker push grufos/mamonsu:latest
-    docker tag grufos/mamonsu:latest grufos/mamonsu:3.2.0
-    docker push grufos/mamonsu:3.2.0
+    docker tag grufos/mamonsu:latest grufos/mamonsu:14_3.2.0
+    docker push grufos/mamonsu:14_3.2.0
 fi

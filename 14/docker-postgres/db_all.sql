@@ -513,17 +513,17 @@ CREATE OR REPLACE FUNCTION util.send_email(
 #
 # Отправка сообщений через функцию в базе данных.
 #
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма','grufos@mail.ru','sergey.grinko@gmail.com');
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма','sergey.grinko@gmail.com','grufos@mail.ru');
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', NULL, 'grufos@mail.ru');
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', NULL, 'sergey.grinko@gmail.com');
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', 'grufos@mail.ru');
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', 'sergey.grinko@gmail.com');
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea], ARRAY['zip']);
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма','grufos@mail.ru','sergey.grinko@gmail.com');
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма','sergey.grinko@gmail.com','grufos@mail.ru');
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма', NULL, 'grufos@mail.ru');
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма', NULL, 'sergey.grinko@gmail.com');
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма', 'grufos@mail.ru');
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма', 'sergey.grinko@gmail.com');
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
+# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea], ARRAY['zip']);
 
   import io
   import zipfile
@@ -540,7 +540,7 @@ CREATE OR REPLACE FUNCTION util.send_email(
 
   _sender_address = p_sender_address
   if p_sender_address is None or p_sender_address == '' or p_sender_address.isspace():
-    _sender_address = socket.gethostname() + " <" +socket.gethostname() + "@company.ru>"
+    _sender_address = socket.gethostname() + " <" +socket.gethostname() + "@interfax.ru>"
 
   _recipients_list = [r.strip() for r in p_to.split(',')]
 
@@ -589,7 +589,7 @@ $$;
 \if :postgres_pgvers_13plus
 CREATE OR REPLACE FUNCTION util.inf_long_running_requests(
     p_query_age interval = '00:02:00'::interval, 
-    p_recipients_list text = 'dba-postgresql@company.ru;'::text
+    p_recipients_list text = 'dba-postgresql@interfax.ru;'::text
 ) RETURNS void
 LANGUAGE plpgsql
 AS $$
@@ -691,7 +691,7 @@ $$;
 \else
 CREATE OR REPLACE FUNCTION util.inf_long_running_requests(
     p_query_age interval = '00:02:00'::interval, 
-    p_recipients_list text = 'dba-postgresql@company.ru;'::text
+    p_recipients_list text = 'dba-postgresql@interfax.ru;'::text
 ) RETURNS void
 LANGUAGE plpgsql
 AS $$

@@ -10,11 +10,11 @@ DOW=$(date +%u)
 # Processing external variables
 
 if [ "$EMAILTO" = "" ]; then
-    EMAILTO="DBA-PostgreSQL@company.ru"
+    EMAILTO="DBA-PostgreSQL@interfax.ru"
 fi
 
 if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=mail.company.ru
+    EMAIL_SERVER=extra.devel.ifx
 fi
 
 if [ "$EMAIL_HOSTNAME" = "" ]; then
