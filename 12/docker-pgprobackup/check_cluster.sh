@@ -4,11 +4,11 @@
 # $2 - 'heapallindexed' It will be additionally verified that in the index, all the cortices of the heaps that should get into it
 
 if [ "$EMAILTO" = "" ]; then
-    EMAILTO="DBA-PostgreSQL@interfax.ru"
+    EMAILTO="DBA-PostgreSQL@company.ru"
 fi
 
 if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=extra.devel.ifx
+    EMAIL_SERVER=mail.company.ru
 fi
 
 if [ "$EMAIL_HOSTNAME" = "" ]; then

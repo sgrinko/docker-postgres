@@ -16,8 +16,8 @@ services:
       PGPORT: 5432
 #      PGUSER: "postgres"
 #      PGPASSWORD: "qweasdzxc"
-      EMAILTO: "DBA-PostgreSQL@interfax.ru"
-      EMAIL_SERVER: "extra.devel.ifx"
+      EMAILTO: "DBA-PostgreSQL@company.ru"
+      EMAIL_SERVER: "mail.company.ru"
       EMAIL_HOSTNAME: "noreplay@myhost.ru"
       BACKUP_THREADS: "4"
       BACKUP_MODE: "page"

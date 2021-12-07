@@ -18,6 +18,7 @@ GRANT EXECUTE ON FUNCTION public.pg_stat_statements_reset(oid, oid, bigint) TO m
 GRANT SELECT ON TABLE pg_catalog.pg_proc TO monitoring_group;
 
 --
+delete from cron.job where command ilike '%util.inf_long_running_requests()%';
 with _cmd as (
     -- организуем контроль за долгими процедурами
     select 'long query JOB all DB' as name, '*/5 * * * *' as schedule, 'select util.inf_long_running_requests();' as command

@@ -47,7 +47,7 @@ select current_setting('server_version_num')::integer >= 140000 as postgres_pgve
   ORDER BY pa.datname, pa.state, pa.xact_start, pa.leader_pid NULLS FIRST;
 --
 \if :postgres_pgvers_14plus
-  CREATE VIEW public.vw_who_tree AS
+  CREATE OR REPLACE VIEW public.vw_who_tree AS
     WITH RECURSIVE activity AS (
           SELECT pg_blocking_pids(pg_stat_activity.pid) AS blocked_by,
               pg_stat_activity.datid,
@@ -168,7 +168,7 @@ select current_setting('server_version_num')::integer >= 140000 as postgres_pgve
     FROM tree
     ORDER BY tree.top_blocker_pid, tree.level, tree.pid;    
 \else
-  CREATE VIEW public.vw_who_tree AS
+  CREATE OR REPLACE VIEW public.vw_who_tree AS
     WITH RECURSIVE activity AS (
           SELECT pg_blocking_pids(pg_stat_activity.pid) AS blocked_by,
               pg_stat_activity.datid,
@@ -423,7 +423,7 @@ select current_setting('server_version_num')::integer >= 140000 as postgres_pgve
     ORDER BY tree.top_blocker_pid, tree.level, tree.pid;    
 \endif
 --
-CREATE VIEW public.vw_locks AS
+CREATE OR REPLACE VIEW public.vw_locks AS
 	SELECT pg_locks.pid,
     pg_locks.virtualtransaction AS vxid,
     pg_locks.locktype AS lock_type,
@@ -450,7 +450,7 @@ CREATE VIEW public.vw_locks AS
             ELSE pg_locks.transactionid::text
         END), pg_locks.locktype, pg_locks.mode, pg_class.relname;
 --
-CREATE VIEW public.vw_partitions AS
+CREATE OR REPLACE VIEW public.vw_partitions AS
  WITH RECURSIVE inheritance_tree AS (
          SELECT c_1.oid AS table_oid,
             n.nspname AS table_schema,
@@ -513,17 +513,17 @@ CREATE OR REPLACE FUNCTION util.send_email(
 #
 # Отправка сообщений через функцию в базе данных.
 #
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма','grufos@mail.ru','sergey.grinko@gmail.com');
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма','sergey.grinko@gmail.com','grufos@mail.ru');
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма', NULL, 'grufos@mail.ru');
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма', NULL, 'sergey.grinko@gmail.com');
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма', 'grufos@mail.ru');
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма', 'sergey.grinko@gmail.com');
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','Текст письма', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
-# select util.send_email('sergey.grinko@interfax.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea], ARRAY['zip']);
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма','grufos@mail.ru','sergey.grinko@gmail.com');
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма','sergey.grinko@gmail.com','grufos@mail.ru');
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', NULL, 'grufos@mail.ru');
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', NULL, 'sergey.grinko@gmail.com');
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', 'grufos@mail.ru');
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', 'sergey.grinko@gmail.com');
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea], ARRAY['zip']);
 
   import io
   import zipfile
@@ -540,7 +540,7 @@ CREATE OR REPLACE FUNCTION util.send_email(
 
   _sender_address = p_sender_address
   if p_sender_address is None or p_sender_address == '' or p_sender_address.isspace():
-    _sender_address = socket.gethostname() + " <" +socket.gethostname() + "@interfax.ru>"
+    _sender_address = socket.gethostname() + " <" +socket.gethostname() + "@company.ru>"
 
   _recipients_list = [r.strip() for r in p_to.split(',')]
 
@@ -589,7 +589,7 @@ $$;
 \if :postgres_pgvers_13plus
 CREATE OR REPLACE FUNCTION util.inf_long_running_requests(
     p_query_age interval = '00:02:00'::interval, 
-    p_recipients_list text = 'dba-postgresql@interfax.ru;'::text
+    p_recipients_list text = 'dba-postgresql@company.ru;'::text
 ) RETURNS void
 LANGUAGE plpgsql
 AS $$
@@ -691,7 +691,7 @@ $$;
 \else
 CREATE OR REPLACE FUNCTION util.inf_long_running_requests(
     p_query_age interval = '00:02:00'::interval, 
-    p_recipients_list text = 'dba-postgresql@interfax.ru;'::text
+    p_recipients_list text = 'dba-postgresql@company.ru;'::text
 ) RETURNS void
 LANGUAGE plpgsql
 AS $$

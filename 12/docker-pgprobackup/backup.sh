@@ -5,11 +5,11 @@ DOW=$(date +%u)
 cd $BACKUP_PATH
 
 if [ "$EMAILTO" = "" ]; then
-    EMAILTO="DBA-PostgreSQL@interfax.ru"
+    EMAILTO="DBA-PostgreSQL@company.ru"
 fi
 
 if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=extra.devel.ifx
+    EMAIL_SERVER=mail.company.ru
 fi
 
 if [ "$EMAIL_HOSTNAME" = "" ]; then

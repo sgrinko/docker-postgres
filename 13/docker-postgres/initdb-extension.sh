@@ -12,7 +12,7 @@ if [ "$DEV_SCHEMA" = "" ]; then
     DEV_SCHEMA=dbo
 fi
 if [ "$EMAIL_SERVER" = "" ]; then
-    EMAIL_SERVER=extra.devel.ifx
+    EMAIL_SERVER=mail.company.ru
 fi
 
 # Perform all actions as $POSTGRES_USER

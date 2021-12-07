@@ -354,6 +354,7 @@ GRANT ALL ON SCHEMA cron TO postgres;
 \endif
 --
 \if :IS_SETUPDB
+delete from cron.job where command ilike '%VACUUM (FREEZE,ANALYZE)%' and "database"=current_database();
 with _cmd as (
     -- в 1-ю неделю месяца замораживаем идентификаторы транзакций, в остальные недели только собираем статистику
     select 'vacuum JOB '||current_database() as name, '0 0 * * 0' as schedule, 'do $$ begin if date_part(''day'', now()) <= 7 then perform dblink(''dblink_currentdb'', ''VACUUM (FREEZE,ANALYZE);''); else perform dblink(''dblink_currentdb'', ''VACUUM (ANALYZE);''); end if; end $$;' as command

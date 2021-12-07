@@ -13,8 +13,8 @@ services:
 
     environment:
       TZ: "Europe/Moscow"
-      EMAILTO: "DBA-PostgreSQL@interfax.ru"
-      EMAIL_SERVER: "extra.devel.ifx"
+      EMAILTO: "DBA-PostgreSQL@company.ru"
+      EMAIL_SERVER: "mail.company.ru"
       EMAIL_HOSTNAME: "noreplay@myhost.ru"
       EMAIL_SEND: "no"
       PGHOST: "postgres"
