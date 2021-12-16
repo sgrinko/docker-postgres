@@ -650,3 +650,5 @@ ALTER EVENT TRIGGER dbots_tg_on_drop_event ENABLE;
 -- ========================================================================= --
 
 GRANT CONNECT ON DATABASE :"dbconnect" TO mamonsu;
+GRANT USAGE ON SCHEMA pg_catalog TO mamonsu;
+GRANT SELECT ON TABLE pg_proc TO mamonsu;
