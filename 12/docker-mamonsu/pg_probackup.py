@@ -131,10 +131,10 @@ class PgProbackup(Plugin):
                         # Backup Creation Mode Full, Page, Delta and Ptrack of the last backup
                         zbx.send(self.key_dir_mode_backup.format('[' + _dir + ']'), mode)
                     if status in ['ERROR', 'CORRUPT', 'ORPHAN']:
-                        error = 'Backup with id: {backup_id} in instance: {instance_name} in pg_probackup dir: ' \
-                                '{backup_catalog} has status: {status}.'.format(backup_id=backup['id'],
-                                                                                instance_name=instance_name,
-                                                                                status=status, backup_catalog=_dir)
+                        error = ('Backup with id: {backup_id} in instance: {instance_name} in pg_probackup dir: ' +
+                                 '{backup_catalog}  has status: {status}.').format(backup_id=backup['id'],
+                                                                                   instance_name=instance['instance'],
+                                                                                   status=status, backup_catalog=_dir)
                         self.log.info(error)
                         no_error = False
                         zbx.send(self.key_dir_error.format('[' + _dir + ']'), error)
