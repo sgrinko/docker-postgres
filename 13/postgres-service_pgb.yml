@@ -26,8 +26,8 @@ services:
       PGBOUNCER_PASSWORD: zxcasdqwe
 #      TZ: "Etc/UTC"
       TZ: "Europe/Moscow"
-      EMAILTO: "DBA-PostgreSQL@company.ru"
-      EMAIL_SERVER: "mail.company.ru"
+      EMAILTO: "DBA-PostgreSQL@interfax.ru"
+      EMAIL_SERVER: "extra.devel.ifx"
       EMAIL_HOSTNAME: "noreplay@myhost.ru"
       BACKUP_THREADS: "4"
       BACKUP_MODE: "delta"
@@ -60,36 +60,3 @@ services:
       - DB_PORT=5432
       - AUTH_TYPE=hba
 
-  mamonsu:
-    build:
-      context: ./docker-mamonsu
-      dockerfile: Dockerfile
-
-    volumes:
-      - "/mnt/pgbak2/:/mnt/pgbak/"
-      - "/var/log/mamonsu1:/var/log/mamonsu"
-      - "/etc/mamonsu1/:/etc/mamonsu/"
-
-    environment:
-#      TZ: "Etc/UTC"
-      TZ: "Europe/Moscow"
-      PGPASSWORD: qweasdzxc
-#      PGHOST: 10.10.2.139
-#      PGHOST: 127.0.0.1
-      PGHOST: postgres
-      PGPORT: 5432
-      MAMONSU_PASSWORD: 1234512345
-      ZABBIX_SERVER_IP: zbxprxy05.interfax.ru
-      ZABBIX_SERVER_PORT: 10051
-      CLIENT_HOSTNAME: docker-server.local
-      MAMONSU_AGENTHOST: 127.0.0.1
-      INTERVAL_PGBUFFERCACHE: 1200
-      PGPROBACKUP_ENABLED: "False"
-
-    restart: always
-    ports:
-      - "10051:10051"
-      - "10052:10052"
-
-    depends_on:
-      - postgres

@@ -4,7 +4,7 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:14.1
+FROM postgres:14.2
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
@@ -32,6 +32,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
            postgresql-$PG_MAJOR-pldebugger \
            postgresql-$PG_MAJOR-plpgsql-check \
            postgresql-$PG_MAJOR-tds-fdw \
+           libkrb5-dev \
       && sed -i "s/text size = 64512/text size = 1262485504/g" /etc/freetds/freetds.conf \
       && cd /tmp \
       && mkdir -p build_ext \
@@ -82,6 +83,12 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && git clone https://github.com/pgcodekeeper/pg_dbo_timestamp \
       && cd pg_dbo_timestamp \
       && make USE_PGXS=1 install \
+      # ====== pg_background
+      && cd /tmp/build_ext \
+      && git clone https://github.com/vibhorkum/pg_background \
+      && cd pg_background \
+      && make \
+      && make install \
       # ====== clean build directory...
       && rm -rf /tmp/build_ext \
       # ====== create backup path ...

@@ -9,7 +9,7 @@ ENV DEBIAN_RELEASE buster
 ENV PG_MAJOR 13
 ENV BACKUP_PATH /mnt/pgbak
 # version mamonsu
-ENV VERSION 3.2.0
+ENV VERSION 3.4.0
 
 # explicitly set user/group IDs
 RUN set -eux; \

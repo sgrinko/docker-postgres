@@ -28,6 +28,7 @@ select not exists(select true FROM pg_catalog.pg_roles where rolname='replicator
     CREATE ROLE replicator;
 \endif
 ALTER ROLE replicator WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN REPLICATION NOBYPASSRLS;
+GRANT CONNECT ON DATABASE postgres TO replicator; -- с версии 2.1.3 patroni требуется право CONNECT для выполнения проверок кластера
 
 -- create group readonly_group
 select not exists(select true FROM pg_catalog.pg_roles where rolname='readonly_group') as is_check
@@ -75,6 +76,20 @@ select not exists(select true FROM pg_catalog.pg_roles where rolname='monitoring
     CREATE ROLE monitoring_group;
 \endif
 ALTER ROLE monitoring_group WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB NOLOGIN NOREPLICATION NOBYPASSRLS;
+
+-- роль для коннекта
+select not exists(select true FROM pg_catalog.pg_roles where rolname='pgbouncer') as is_check
+\gset
+\if :is_check
+    -- пользователь pgbouncer должен иметь только md5 аутентификацию
+    CREATE ROLE pgbouncer;
+    SET log_statement='none';
+    select setting as pswd_enc from pg_settings where name = 'password_encryption' \gset
+    SET password_encryption = 'md5';
+    ALTER ROLE pgbouncer WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD :'PGBOUNCER_PASSWORD';
+    set password_encryption = :'pswd_enc';
+    SET log_statement='ddl';
+\endif
 
 -- added rights
 GRANT CONNECT ON DATABASE postgres TO :"role_deploy";

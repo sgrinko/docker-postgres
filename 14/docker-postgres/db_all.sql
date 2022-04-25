@@ -5,14 +5,33 @@ SET default_transaction_read_only = off;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 
+select current_database() as dbconnect \gset
+
 -- создаём объекты для мониторинга
 CREATE EXTENSION IF NOT EXISTS plpython3u;
 -- Upgrade pg_stat_statements
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements SCHEMA public;
 ALTER EXTENSION pg_stat_statements UPDATE;
 --
+CREATE EXTENSION IF NOT EXISTS pg_background SCHEMA public;
+ALTER EXTENSION pg_background UPDATE;
+--
 CREATE SCHEMA IF NOT EXISTS util;
 COMMENT ON SCHEMA util IS 'Схема для хранения различных функций и представлений общего назначения';
+--
+CREATE SCHEMA IF NOT EXISTS pgbouncer;
+COMMENT ON SCHEMA pgbouncer IS 'Схема для хранения функций пула коннектов';
+GRANT CONNECT ON DATABASE :"dbconnect" TO pgbouncer;
+GRANT USAGE ON SCHEMA pgbouncer TO pgbouncer;
+CREATE OR REPLACE FUNCTION pgbouncer.user_lookup(p_username text, OUT uname text, OUT phash text) RETURNS record
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+BEGIN
+    SELECT usename, passwd FROM pg_catalog.pg_shadow
+    WHERE usename = p_username INTO uname, phash;
+    RETURN;
+END;
+$$;
 --
 CREATE OR REPLACE FUNCTION util.replace_char_xml(p_str2xml text) RETURNS text
     LANGUAGE sql IMMUTABLE PARALLEL SAFE COST 10.0
@@ -680,7 +699,7 @@ begin
                 <th>N</th><th>duration</th><th>pid</th><th>leader_pid</th><th>blocked_by</th><th>state</th><th>open tran</th><th>sql text</th><th>user name</th><th>wait info</th><th>database name</th><th>client addr</th><th>program name</th><th>backend_type</th>'
                 || v_html || '</table>';
         -- отправляем письмо
-        perform util.send_email(p_to := p_recipients_list, p_subject := 'Длительные запросы', p_message := v_html, 
+        perform util.send_email(p_to := p_recipients_list, p_subject := 'Длительные запросы'::text, p_message := v_html, 
         						p_attach_files_name := v_arrpids, p_attach_files_body := v_arrquery);
         -- фиксируем в логе отправку письма
         raise notice 'Письмо о длительных запросах отправлено';
@@ -780,7 +799,7 @@ begin
                 <th>N</th><th>duration</th><th>pid</th><th>blocked_by</th><th>state</th><th>open tran</th><th>sql text</th><th>user name</th><th>wait info</th><th>database name</th><th>client addr</th><th>program name</th><th>backend_type</th>'
                 || v_html || '</table>';
         -- отправляем письмо
-        perform util.send_email(p_to := p_recipients_list, p_subject := 'Длительные запросы', p_message := v_html, 
+        perform util.send_email(p_to := p_recipients_list, p_subject := 'Длительные запросы'::text, p_message := v_html, 
         						p_attach_files_name := v_arrpids, p_attach_files_body := v_arrquery);
         -- фиксируем в логе отправку письма
         raise notice 'Письмо о длительных запросах отправлено';
@@ -789,3 +808,16 @@ begin
 end
 $$;
 \endif
+
+CREATE OR REPLACE FUNCTION util.background_start(p_command text) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+/*
+  Запускает указанную команду отдельным фоновым процессом без ожидания возврата результата
+*/
+declare v_pid integer = pg_background_launch(p_command);
+begin
+    perform pg_sleep(0.1);
+    perform pg_background_detach(v_pid);
+end;
+$$;

@@ -155,7 +155,6 @@ CREATE EXTENSION IF NOT EXISTS plpgsql_check SCHEMA public;
 -- ========================================================================== --
 
 DROP SERVER IF EXISTS dblink_postgres cascade;
-DROP SERVER IF EXISTS dblink_currentdb cascade;
 DROP SERVER IF EXISTS fdw_postgres cascade;
 
 -- DBLINK позволяет выполнять автономные запросы
@@ -166,15 +165,6 @@ CREATE SERVER IF NOT EXISTS dblink_postgres
 -- user
 CREATE USER MAPPING IF NOT EXISTS FOR postgres
   SERVER dblink_postgres
-  OPTIONS (user 'postgres');
-
--- DBLINK: в текущую БД
-CREATE SERVER IF NOT EXISTS dblink_currentdb
-  FOREIGN DATA WRAPPER dblink_fdw
-  OPTIONS (host 'localhost', port '5432', dbname :'dbconnect');
--- user
-CREATE USER MAPPING IF NOT EXISTS FOR postgres
-  SERVER dblink_currentdb
   OPTIONS (user 'postgres');
 
 -- FDW поддерживает транзакции
@@ -357,7 +347,7 @@ GRANT ALL ON SCHEMA cron TO postgres;
 delete from cron.job where command ilike '%VACUUM (FREEZE,ANALYZE)%' and "database"=current_database();
 with _cmd as (
     -- в 1-ю неделю месяца замораживаем идентификаторы транзакций, в остальные недели только собираем статистику
-    select 'vacuum JOB '||current_database() as name, '0 0 * * 0' as schedule, 'do $$ begin if date_part(''day'', now()) <= 7 then perform dblink(''dblink_currentdb'', ''VACUUM (FREEZE,ANALYZE);''); else perform dblink(''dblink_currentdb'', ''VACUUM (ANALYZE);''); end if; end $$;' as command
+    select 'vacuum JOB '||current_database() as name, '0 0 * * 0' as schedule, 'do $$ begin if date_part(''day'', now()) <= 7 then PERFORM * from pg_background_result(pg_background_launch(''VACUUM (FREEZE,ANALYZE);'')) as (result TEXT); else PERFORM * from pg_background_result(pg_background_launch(''VACUUM (ANALYZE);'')) as (result TEXT); end if; end $$;' as command
 )
 select cron.schedule(_cmd.name, _cmd.schedule, _cmd.command)
 from _cmd

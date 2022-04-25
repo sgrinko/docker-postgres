@@ -48,6 +48,7 @@ _В шаблонную БД установлены расширения:_
 | hunspell_ru_ru_aot     | Russian Hunspell Dictionary (from AOT.ru group)                                     |
 | pageinspect            | inspect the contents of database pages at a low level                               |
 | pg_buffercache         | examine the shared buffer cache                                                     |
+| pg_background          | Run SQL queries in the background                                                   |
 | pg_dbo_timestamp       | PostgreSQL extension for storing time and author of database structure modification |
 | pg_prewarm             | prewarm relation data                                                               |
 | pg_repack              | Reorganize tables in PostgreSQL databases with minimal locks                        |
@@ -124,7 +125,7 @@ shared_ispell.max_size=70MB
 
 Чтобы "дотянуть" БД до стандарта по расширениям и настройкам текущего контейнера выполните вызов скрипта: `update-extension.sh` как описано чуть выше.
 
-В кластере БД, созданном с нуля, `pg_hba.conf` и `pg_ident.conf` имеют значения, рассчитанные на вход по паролю (на это оказывает влияние параметр POSTGRES_HOST_AUTH_METHOD), а `postgresql.conf` оптимизирован под 2 ГБ ОЗУ и SSD диски. При необходимости, после первичной инициализации уточните параметры конфигурации.
+В кластере БД, созданном с нуля, `pg_hba.conf` и `pg_ident.conf` имеют значения, рассчитанные на вход по паролю (на это оказывает влияние параметр POSTGRES_HOST_AUTH_METHOD), а `postgresql.conf` оптимизирован под 512 MБ ОЗУ и SSD диски. При необходимости, после первичной инициализации уточните параметры конфигурации.
 
 # Пользовательская БД
 

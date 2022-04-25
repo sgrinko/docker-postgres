@@ -52,7 +52,7 @@ fi
 psql -c "select pg_reload_conf();"
 
 # Create the 'template_extension' template db
-psql -f /usr/local/bin/pre.sql -v DEPLOY_PASSWORD="$DEPLOY_PASSWORD"
+psql -f /usr/local/bin/pre.sql -v DEPLOY_PASSWORD="$DEPLOY_PASSWORD" -v PGBOUNCER_PASSWORD="$PGBOUNCER_PASSWORD"
 
 # Load extension into template_extension database and $POSTGRES_DB
 for DB in "$POSTGRES_DB" template_extension ; do

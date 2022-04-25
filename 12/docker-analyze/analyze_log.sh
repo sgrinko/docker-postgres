@@ -1,5 +1,7 @@
 #!/bin/bash
 curr_date=`date -d "-1 day" +%F`
+echo "Date of processing: $curr_date"
+
 echo "# read names DBs ..."
 DB_ALL=`psql -h ${PGHOST:-127.0.0.1} -p ${PGPORT:-5432} -XtqA -c "select string_agg(datname,' ') from pg_database where not datistemplate and datname not in ('postgres','mamonsu') limit 1;"`
 VERSION=$PG_MAJOR
@@ -31,17 +33,18 @@ if [ "$STAT_STATEMENTS" = "true" ]; then
   done
 fi
 
-if [ -f $PGLOG/postgresql-$VERSION-${curr_date}_000000.log ]; then
-  echo "# Procesing: $PGLOG/postgresql-$VERSION-${curr_date}_000000.log ..."
-  # merge lot LOG files into one file
-  for file in $( ls $PGLOG/postgresql-$VERSION-${curr_date}*.log )
-  do
-    if [ $file != $PGLOG/postgresql-$VERSION-${curr_date}_000000.log ]; then
-        cat $file >> $PGLOG/postgresql-$VERSION-${curr_date}_000000.log
-        rm $file
-    fi
-  done
+if [ ! -f $PGLOG/postgresql-$VERSION-${curr_date}_000000.log ]; then
+  touch $PGLOG/postgresql-$VERSION-${curr_date}_000000.log
 fi
+# merge lot LOG files into one file
+for file in $( ls $PGLOG/postgresql-$VERSION-${curr_date}*.log )
+do
+  echo "# Procesing: $file ..."
+  if [ $file != $PGLOG/postgresql-$VERSION-${curr_date}_000000.log ]; then
+      cat $file >> $PGLOG/postgresql-$VERSION-${curr_date}_000000.log
+      rm $file
+  fi
+done
 
 echo "# take pgbadger statistics ..."
 cd $REPORT_PATH
@@ -70,15 +73,22 @@ fi
 
 DAY=`date -d "-1 day" +%a`
 
-echo "# mamonsu logs to archive on DAY..."
-mv -f /var/log/mamonsu/agent.log /var/log/mamonsu/agent.log.$DAY
-bzip2 -f -9 /var/log/mamonsu/agent.log.$DAY
-
-echo "# pgbouncer logs to archive on DAY..."
-mv -f /var/log/pgbouncer/pgbouncer.log /var/log/pgbouncer/pgbouncer.log.$DAY
-bzip2 -f -9 /var/log/pgbouncer/pgbouncer.log.$DAY
-
-echo "# pgbouncer send HUP signal..."
-echo "psql -h ${PGBHOST:-127.0.0.1} -p ${PGBPORT:-6432} -c 'reload;' pgbouncer"
-psql -h ${PGBHOST:-127.0.0.1} -p ${PGBPORT:-6432} -c 'reload;' pgbouncer
-
+echo ""
+echo "# -- =========================== --"
+echo "# mamonsu.log -> mamonsu.log.$DAY.bz ..."
+mv -f /var/log/mamonsu/mamonsu.log /var/log/mamonsu/mamonsu.log.$DAY
+bzip2 -f -9 /var/log/mamonsu/mamonsu.log.$DAY
+echo "# пожалуйста выполните рестарт контейнера mamonsu ..."
+echo "# -- =========================== --"
+echo ""
+echo "# -- =========================== --"
+echo "# pgbouncer.log -> pgbouncer.log.$DAY.bz ...(blocked)"
+#mv -f /var/log/pgbouncer/pgbouncer.log /var/log/pgbouncer/pgbouncer.log.$DAY
+#bzip2 -f -9 /var/log/pgbouncer/pgbouncer.log.$DAY
+echo "# -- =========================== --"
+echo ""
+echo "# -- =========================== --"
+echo "# pgbouncer send HUP signal...(blocked)"
+#echo "psql -h ${PGBHOST:-127.0.0.1} -p ${PGBPORT:-6432} -c 'reload;' pgbouncer"
+#psql -h ${PGBHOST:-127.0.0.1} -p ${PGBPORT:-6432} -c 'reload;' pgbouncer
+echo "# -- =========================== --"

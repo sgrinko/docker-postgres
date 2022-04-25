@@ -8,10 +8,10 @@ set -euo pipefail
 #echo "========="
 #if ! docker image ls | grep "grufos/pgbouncer" ; then
 #    echo "    push ..."
-#    docker tag docker_pgbouncer:latest grufos/pgbouncer:latest
+#    docker tag docker-postgres_pgbouncer:latest grufos/pgbouncer:latest
 #    docker push grufos/pgbouncer:latest
-#    docker tag grufos/pgbouncer:latest grufos/pgbouncer:1.16.1
-#    docker push grufos/pgbouncer:1.16.1
+#    docker tag grufos/pgbouncer:latest grufos/pgbouncer:1.17.0
+#    docker push grufos/pgbouncer:1.17.0
 #fi
 
 # postgres
@@ -20,10 +20,10 @@ echo "postgres"
 echo "========"
 if ! docker image ls | grep "grufos/postgres" ; then
     echo "    push ..."
-    docker tag docker_postgres:latest grufos/postgres:latest
+    docker tag docker-postgres_postgres:latest grufos/postgres:latest
 #    docker push grufos/postgres:latest
-    docker tag grufos/postgres:latest grufos/postgres:12.9
-    docker push grufos/postgres:12.9
+    docker tag grufos/postgres:latest grufos/postgres:12.10
+    docker push grufos/postgres:12.10
 fi
 
 # pganalyze
@@ -32,10 +32,10 @@ echo "pganalyze"
 echo "========="
 if ! docker image ls | grep "grufos/pganalyze" ; then
     echo "    push ..."
-    docker tag docker_analyze:latest grufos/pganalyze:latest
+    docker tag docker-postgres_analyze:latest grufos/pganalyze:latest
 #    docker push grufos/pganalyze:latest
-    docker tag grufos/pganalyze:latest grufos/pganalyze:12.9
-    docker push grufos/pganalyze:12.9
+    docker tag grufos/pganalyze:latest grufos/pganalyze:12.10
+    docker push grufos/pganalyze:12.10
 fi
 
 # pgprobackup
@@ -44,10 +44,10 @@ echo "pgprobackup"
 echo "==========="
 if ! docker image ls | grep "grufos/pgprobackup" ; then
     echo "    push ..."
-    docker tag docker_pgprobackup_backup:latest grufos/pgprobackup:latest
+    docker tag docker-postgres_pgprobackup_backup:latest grufos/pgprobackup:latest
 #    docker push grufos/pgprobackup:latest
-    docker tag grufos/pgprobackup:latest grufos/pgprobackup:12.9
-    docker push grufos/pgprobackup:12.9
+    docker tag grufos/pgprobackup:latest grufos/pgprobackup:12.10
+    docker push grufos/pgprobackup:12.10
 fi
 
 # pgprorestore
@@ -56,10 +56,10 @@ echo "pgprorestore"
 echo "============"
 if ! docker image ls | grep "grufos/pgprorestore" ; then
     echo "    push ..."
-    docker tag docker_pgprobackup_restore:latest grufos/pgprorestore:latest
+    docker tag docker-postgres_pgprobackup_restore:latest grufos/pgprorestore:latest
 #    docker push grufos/pgprorestore:latest
-    docker tag grufos/pgprorestore:latest grufos/pgprorestore:12.9
-    docker push grufos/pgprorestore:12.9
+    docker tag grufos/pgprorestore:latest grufos/pgprorestore:12.10
+    docker push grufos/pgprorestore:12.10
 fi
 
 # mamonsu
@@ -68,8 +68,8 @@ echo "mamonsu"
 echo "======="
 if ! docker image ls | grep "grufos/mamonsu" ; then
     echo "    push ..."
-    docker tag docker_mamonsu:latest grufos/mamonsu:latest
+    docker tag docker-postgres_mamonsu:latest grufos/mamonsu:latest
 #    docker push grufos/mamonsu:latest
-    docker tag grufos/mamonsu:latest grufos/mamonsu:12_3.2.0
-    docker push grufos/mamonsu:12_3.2.0
+    docker tag grufos/mamonsu:latest grufos/mamonsu:12_3.4.0
+    docker push grufos/mamonsu:12_3.4.0
 fi

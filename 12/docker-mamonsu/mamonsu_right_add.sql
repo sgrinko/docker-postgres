@@ -11,21 +11,20 @@ select not pg_is_in_recovery() as is_master \gset
                         else replace(current_setting('shared_buffers'), 'MB', '')::int
                    end * 0.0117 || ' MB''' as highpage_mb \gset
     ALTER FUNCTION mamonsu.buffer_cache() SET WORK_MEM = :highpage_mb; -- for shared_buffers 16 Гб 200 Мб
--- корректируем проблему неверного чтения лага репликации: "not pg_is_in_recovery() or "
-CREATE OR REPLACE FUNCTION mamonsu.timestamp_get()
-  RETURNS double precision AS
-$BODY$
-  SELECT
-      CASE WHEN not pg_is_in_recovery() or pg_last_wal_receive_lsn() = pg_last_wal_replay_lsn() THEN 0
-      ELSE extract (epoch FROM now() - coalesce(pg_last_xact_replay_timestamp(), to_timestamp(ts)))
-      END
-  FROM mamonsu.timestamp_master_3_2_0
-  WHERE id = 1 LIMIT 1;
-$BODY$
-  LANGUAGE sql VOLATILE SECURITY DEFINER
-PARALLEL UNSAFE
-  COST 100;
   \endif
   -- we give the right to connect for the role of mamonsu
   do $$ begin execute 'GRANT CONNECT ON DATABASE "' || current_database() || '" TO mamonsu; '; end $$;
+  --
+  CREATE SCHEMA IF NOT EXISTS pgbouncer;
+  GRANT CONNECT ON DATABASE mamonsu TO pgbouncer;
+  GRANT USAGE ON SCHEMA pgbouncer TO pgbouncer;
+CREATE OR REPLACE FUNCTION pgbouncer.user_lookup(p_username text, OUT uname text, OUT phash text) RETURNS record
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+BEGIN
+    SELECT usename, passwd FROM pg_catalog.pg_shadow
+    WHERE usename = p_username INTO uname, phash;
+    RETURN;
+END;
+$$;
 \endif

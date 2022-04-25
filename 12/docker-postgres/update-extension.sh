@@ -20,7 +20,7 @@ export PGUSER="$POSTGRES_USER"
 export PGDATABASE="$POSTGRES_DB"
 
 # Create the 'template_extension' template db
-su - postgres -c "psql -f /usr/local/bin/pre.sql -v DEPLOY_PASSWORD=\"$DEPLOY_PASSWORD\""
+su - postgres -c "psql -f /usr/local/bin/pre.sql -v DEPLOY_PASSWORD=\"$DEPLOY_PASSWORD\" -v PGBOUNCER_PASSWORD=\"$PGBOUNCER_PASSWORD\""
 
 # Load extension into both USER DB and $POSTGRES_DB
 for DB in "$POSTGRES_DB" "${@}"; do
