@@ -459,7 +459,7 @@ services:
       PGHOST: postgres
       PGPORT: 5432
       MAMONSU_PASSWORD: 1234512345
-      ZABBIX_SERVER_IP: zbxprxy.server.ru
+      ZABBIX_SERVER_IP: name.server.ru
       ZABBIX_SERVER_PORT: 10051
       CLIENT_HOSTNAME: my_host.server.ru
       MAMONSU_AGENTHOST: 127.0.0.1

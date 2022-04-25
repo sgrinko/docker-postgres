@@ -79,7 +79,7 @@ services:
       PGHOST: postgres
       PGPORT: 5432
       MAMONSU_PASSWORD: 1234512345
-      ZABBIX_SERVER_IP: zbxprxy05.interfax.ru
+      ZABBIX_SERVER_IP: name.company.ru
       ZABBIX_SERVER_PORT: 10051
       CLIENT_HOSTNAME: docker-server.local
       MAMONSU_AGENTHOST: 127.0.0.1
