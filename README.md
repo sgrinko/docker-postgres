@@ -475,3 +475,7 @@ services:
     depends_on:
       - postgres
 ```
+
+# Подсказки
+
+Как запустить контейнер в tmpfs - https://stackoverflow.com/questions/42226418/how-to-move-postresql-to-ram-disk-in-docker
