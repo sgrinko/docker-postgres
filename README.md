@@ -296,7 +296,7 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
            -e POSTGRES_HOST_AUTH_METHOD=trust \
            -e DEPLOY_PASSWORD=cxzdsaewq \
            -e TZ="Etc/UTC" \
-           grufos/postgres:14.2 \
+           grufos/postgres:14.3 \
            -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
            -c shared_ispell.max_size=70MB
 ```
@@ -313,7 +313,7 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
        -v "/var/log/postgresql:/var/log/postgresql" \
        -v "/mnt/pgbak2:/mnt/pgbak" \
        -v "/usr/share/postgres/tsearch_data:/usr/share/postgresql/tsearch_data" \
-       grufos/postgres:14.2 \
+       grufos/postgres:14.3\
        -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
        -c shared_ispell.max_size=70MB
 ```
@@ -340,7 +340,7 @@ services:
  
   postgres:
 
-#    image: grufos/postgres:14.2
+#    image: grufos/postgres:14.3
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile
@@ -386,7 +386,7 @@ services:
 
   postgres:
 
-#    image: grufos/postgres:14.2
+#    image: grufos/postgres:14.3
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile
@@ -460,7 +460,7 @@ services:
       PGHOST: postgres
       PGPORT: 5432
       MAMONSU_PASSWORD: 1234512345
-      ZABBIX_SERVER_IP: zbxprxy.server.ru
+      ZABBIX_SERVER_IP: name.server.ru
       ZABBIX_SERVER_PORT: 10051
       CLIENT_HOSTNAME: my_host.server.ru
       MAMONSU_AGENTHOST: 127.0.0.1

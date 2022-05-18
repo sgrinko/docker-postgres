@@ -33,7 +33,7 @@ if [ "$STAT_STATEMENTS" = "true" ]; then
   done
 fi
 
-if not [ -f $PGLOG/postgresql-$VERSION-${curr_date}_000000.log ]; then
+if [ ! -f $PGLOG/postgresql-$VERSION-${curr_date}_000000.log ]; then
   touch $PGLOG/postgresql-$VERSION-${curr_date}_000000.log
 fi
 # merge lot LOG files into one file
