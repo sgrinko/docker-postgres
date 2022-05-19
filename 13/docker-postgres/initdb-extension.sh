@@ -51,20 +51,29 @@ fi
 
 psql -c "select pg_reload_conf();"
 
-# Create the 'template_extension' template db
-psql -f /usr/local/bin/pre.sql -v DEPLOY_PASSWORD="$DEPLOY_PASSWORD" -v PGBOUNCER_PASSWORD="$PGBOUNCER_PASSWORD"
+# Create the 'template_extension' template DB and application DB
+if [ "$APP_DB" != "" ]; then
+  psql -f /usr/local/bin/pre.sql -v DEPLOY_PASSWORD="$DEPLOY_PASSWORD" -v PGBOUNCER_PASSWORD="$PGBOUNCER_PASSWORD" -v APP_DB="$APP_DB"
+else
+  psql -f /usr/local/bin/pre.sql -v DEPLOY_PASSWORD="$DEPLOY_PASSWORD" -v PGBOUNCER_PASSWORD="$PGBOUNCER_PASSWORD"
+fi
 
 # Load extension into template_extension database and $POSTGRES_DB
-for DB in "$POSTGRES_DB" template_extension ; do
+for DB in "$POSTGRES_DB" template_extension "$APP_DB" ; do
+  if [ -n "$DB" ]; then
     echo "Loading extensions into $DB"
 
-    psql --dbname="$DB" -f /usr/local/bin/db_all.sql -v email_server=\"$EMAIL_SERVER\"
+    psql --dbname="$DB" -f /usr/local/bin/db_all.sql -v email_server="$EMAIL_SERVER"
 
     if [ "$DB" = "postgres" ] ; then
-        psql --dbname="$DB" -f /usr/local/bin/db_postgres.sql -v email_server=\"$EMAIL_SERVER\"
+        psql --dbname="$DB" -f /usr/local/bin/db_postgres.sql -v email_server="$EMAIL_SERVER"
     else
-        psql --dbname="$DB" -f /usr/local/bin/db_notpostgres.sql -v IS_SETUPDB=false -v DEV_SCHEMA="$DEV_SCHEMA" -v POSTGRES_PASSWORD="$POSTGRES_PASSWORD" -v email_server=\"$EMAIL_SERVER\"
+        psql --dbname="$DB" -f /usr/local/bin/db_notpostgres.sql -v IS_SETUPDB=false -v DEV_SCHEMA="$DEV_SCHEMA" -v POSTGRES_PASSWORD="$POSTGRES_PASSWORD" -v email_server="$EMAIL_SERVER"
+        if [ "$DB" != "template_extension" ] ; then
+            psql --dbname="$DB" -f /usr/local/bin/db_target.sql -v DEV_SCHEMA="$DEV_SCHEMA" -v email_server="$EMAIL_SERVER"
+        fi
     fi
+  fi
 done
 
 psql -f /usr/local/bin/post.sql

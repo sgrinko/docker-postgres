@@ -19,6 +19,7 @@ services:
     ports:
       - "5433:5432"
     environment:
+#      APP_DB: "My_db"
 #      POSTGRES_INITDB_ARGS: "--locale=ru_RU.UTF8 --data-checksums"
       POSTGRES_PASSWORD: qweasdzxc
       POSTGRES_HOST_AUTH_METHOD: trust

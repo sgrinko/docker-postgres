@@ -9,6 +9,14 @@ select not exists(select true FROM pg_catalog.pg_database where datname='templat
     CREATE DATABASE template_extension IS_TEMPLATE true;
 \endif
 
+\if :{?APP_DB}
+  select not exists(select true FROM pg_catalog.pg_database where datname = :'APP_DB') as is_check
+  \gset
+  \if :is_check
+    CREATE DATABASE :"APP_DB";
+  \endif
+\endif
+
 -- create role deploy
 -- роль для деплоя, т.е. все объекты в БД должны быть созданы от нее, а не от пользователя postgres (sa)
 select not exists(select true FROM pg_catalog.pg_roles where rolname ilike '%deploy%') as is_check

@@ -1,5 +1,5 @@
 #!/bin/bash
-docker run --name my_postgres_12 --shm-size 2147483648 -p 5433:5432/tcp \
+docker run --rm --name my_postgres_12 --shm-size 2147483648 -p 5433:5432/tcp \
            -v /var/lib/pgsql/12_1/data:/var/lib/postgresql/data \
            -v /var/log/postgresql1:/var/log/postgresql \
            -v /mnt/pgbak2/:/mnt/pgbak \
