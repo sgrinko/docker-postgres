@@ -724,7 +724,13 @@ declare
     v_nn_master int;
     v_nn_parallel int;
 begin
-    if exists( select 1 from public.vw_who where state <> 'idle' and datname not in ('mamonsu', 'postgres') and coalesce(ts_age, xact_age, query_age) > p_query_age and position('vacuum' in lower(query))=0 ) then
+    if exists( select 1 from public.vw_who 
+               where state <> 'idle' 
+                 and datname not in ('mamonsu', 'postgres') 
+                 and coalesce(ts_age, xact_age, query_age) > p_query_age 
+                 and position('vacuum' in lower(query))=0 
+                 and position('start_replication slot' in lower(query))=0 
+             ) then
         -- есть, что отправлять...
         -- читаем данные по длительным запросам
         v_html = (

@@ -18,7 +18,7 @@ RUN set -eux; \
     chown -R postgres:postgres /var/lib/postgresql
 
 RUN apt-get update \
-      && apt-get install -y wget gnupg sendemail \
+      && apt-get install -y wget gnupg sendemail jq \
       && echo "deb [arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
       && wget -O - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | apt-key add - \
       # ... install psql ...

@@ -14,11 +14,11 @@ ENV POSTGIS_MAJOR 3
 ENV DEBIAN_RELEASE buster
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
-ENV RUM_VERSION 1.3.9
+ENV RUM_VERSION 1.3.11
 
 RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8 \
       && apt-get update \
-      && apt-get install -y wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop mc systemtap-sdt-dev \
+      && apt-get install -y jq wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop mc systemtap-sdt-dev \
       && echo "deb [arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
       && wget -O - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | apt-key add - \
       && apt-get update \
