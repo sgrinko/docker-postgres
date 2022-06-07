@@ -9,7 +9,7 @@ services:
       dockerfile: Dockerfile
     shm_size: '2gb'
     command: |
-      -c shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+      -c shared_preload_libraries='plpgsql_check, plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
       -c shared_ispell.max_size=70MB
     volumes:
       - "/var/lib/pgsql/13_1/data:/var/lib/postgresql/data"

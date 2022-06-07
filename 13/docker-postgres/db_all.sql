@@ -32,6 +32,9 @@ BEGIN
     RETURN;
 END;
 $$;
+GRANT EXECUTE ON FUNCTION pgbouncer.user_lookup(text) TO pgbouncer;
+REVOKE EXECUTE ON FUNCTION pgbouncer.user_lookup(text) FROM public;
+REVOKE EXECUTE ON FUNCTION pgbouncer.user_lookup(text) FROM execution_group;
 --
 CREATE OR REPLACE FUNCTION util.replace_char_xml(p_str2xml text) RETURNS text
     LANGUAGE sql IMMUTABLE PARALLEL SAFE COST 10.0

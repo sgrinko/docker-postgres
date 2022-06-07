@@ -104,7 +104,7 @@ $ docker exec -it temp_postgres_1 update-extension.sh <доп.БД>
 
 ```
 command: |
-      -c shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+      -c shared_preload_libraries='plpgsql_check, plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
       -c shared_ispell.max_size=70MB
 ```
 
@@ -115,7 +115,7 @@ command: |
 Когда контейнер запускается с уже присоединённым каталогом кластера БД, то никаких внутренних скриптов инициализации не применяется. Однако, если есть желание "дотянуть" до стандарта по расширениям и настройкам текущего контейнера, то необходимо иметь ввиду, что для полноценной работы внутренних скриптов необходимо в настройках кластера загружать следующие shared библиотеки:
 
 ```
-shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+shared_preload_libraries='plpgsql_check, plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
 ```
 
 а также в файле настроек указать параметр: 
@@ -298,7 +298,7 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
            -e DEPLOY_PASSWORD=cxzdsaewq \
            -e TZ="Etc/UTC" \
            grufos/postgres:14.3 \
-           -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
+           -c shared_preload_libraries="plpgsql_check, plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
            -c shared_ispell.max_size=70MB
 ```
 
@@ -314,8 +314,8 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
        -v "/var/log/postgresql:/var/log/postgresql" \
        -v "/mnt/pgbak2:/mnt/pgbak" \
        -v "/usr/share/postgres/tsearch_data:/usr/share/postgresql/tsearch_data" \
-       grufos/postgres:14.3\
-       -c shared_preload_libraries="plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
+       grufos/postgres:14.3 \
+       -c shared_preload_libraries="plpgsql_check, plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
        -c shared_ispell.max_size=70MB
 ```
 
@@ -347,7 +347,7 @@ services:
       dockerfile: Dockerfile
     shm_size: '2gb'
     command: |
-      -c shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+      -c shared_preload_libraries='plpgsql_check, plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
       -c shared_ispell.max_size=70MB
     volumes:
       - "/var/lib/pgsql/14_1/data:/var/lib/postgresql/data"
@@ -393,7 +393,7 @@ services:
       dockerfile: Dockerfile
     shm_size: '2gb'
     command: |
-      -c shared_preload_libraries='plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+      -c shared_preload_libraries='plpgsql_check, plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
       -c shared_ispell.max_size=70MB
     volumes:
       - "/var/lib/pgsql/14_1/data:/var/lib/postgresql/data"
