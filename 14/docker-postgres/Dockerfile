@@ -4,7 +4,7 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:14.3
+FROM postgres:14.4
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 

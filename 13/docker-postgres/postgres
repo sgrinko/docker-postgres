@@ -3,12 +3,7 @@
 # this is start file for postgres
 
 # Check on the need to initialize the catalog of the FTS
-COUNT_DIR=`ls -l /usr/share/postgresql/tsearch_data/ | wc -l`
-if [ "$COUNT_DIR" = "1" ]; then
-   # init new directory for FTS
-   echo "# restore files on FTS folder ..."
-   tar -xzf /usr/share/postgresql/$PG_MAJOR/tsearch_data.tar.gz -C /usr/share/postgresql/tsearch_data/
-fi
+tar -xzkf /usr/share/postgresql/$PG_MAJOR/tsearch_data.tar.gz -C /usr/share/postgresql/tsearch_data/ > /dev/null 2>&1
 
 # start postgres process ...
-/usr/lib/postgresql/$PG_MAJOR/bin/postgres ${@}
+exec /usr/lib/postgresql/$PG_MAJOR/bin/postgres ${@}
