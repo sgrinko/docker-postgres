@@ -57,4 +57,4 @@ cd ${CONFIG_DIR}
 
 # start services...
 cd /
-/usr/bin/mamonsu -a ${CONFIG_DIR}/plugins -c ${CONFIG_DIR}/agent.conf
+exec /usr/bin/mamonsu -a ${CONFIG_DIR}/plugins -c ${CONFIG_DIR}/agent.conf
