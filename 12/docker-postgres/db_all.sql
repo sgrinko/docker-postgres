@@ -526,7 +526,7 @@ CREATE OR REPLACE FUNCTION util.send_email(
     p_attach_files_body bytea[] = NULL::bytea[], 
     p_attach_files_codec text[] = NULL::text[], 
     p_sender_address text = NULL::text, 
-    p_smtp_server text = coalesce(nullif(current_setting('adm.email_smtp_server', true), ''), :'email_server')
+    p_smtp_server text = COALESCE(NULLIF(current_setting('adm.email_smtp_server'::text, true), ''::text), 'extra.devel.ifx'::text)
     ) RETURNS text
     LANGUAGE plpython3u
     AS $$
