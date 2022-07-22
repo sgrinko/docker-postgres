@@ -19,12 +19,5 @@ GRANT SELECT ON TABLE pg_catalog.pg_proc TO monitoring_group;
 
 --
 delete from cron.job where command ilike '%util.inf_long_running_requests()%';
-with _cmd as (
-    -- организуем контроль за долгими процедурами
-    select 'long query JOB all DB' as name, '*/5 * * * *' as schedule, 'select util.inf_long_running_requests();' as command
-)
-select cron.schedule(_cmd.name, _cmd.schedule, _cmd.command)
-from _cmd
-   left join cron.job j on j.command = _cmd.command
-where j.command is null
-;
+-- организуем контроль за долгими процедурами
+select cron.schedule('long query JOB all DB', '*/5 * * * *', 'select util.inf_long_running_requests();');

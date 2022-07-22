@@ -42,12 +42,14 @@ else
     cp -f /var/lib/postgresql/pg_hba.conf $PGDATA
 fi
 cp -f /var/lib/postgresql/pg_ident.conf $PGDATA
+cp -f /var/lib/postgresql/postgresql.conf $PGDATA
 if [ -n "$TZ" ]; then
     # specifies a specific time zone for the server time zone
-    sed "s!timezone = 'UTC'!timezone = '$TZ'!g" /var/lib/postgresql/postgresql.conf > $PGDATA/postgresql.conf
-else
-    cp -f /var/lib/postgresql/postgresql.conf $PGDATA
+    sed -i "s!timezone = 'UTC'!timezone = '$TZ'!g" $PGDATA/postgresql.conf
 fi
+
+# specifies a specific Email server for sending letters
+sed -i "s!adm.email_smtp_server = 'mail.company.ru'!adm.email_smtp_server = '$EMAIL_SERVER'!g" $PGDATA/postgresql.conf
 
 psql -c "select pg_reload_conf();"
 

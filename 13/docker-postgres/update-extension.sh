@@ -39,3 +39,8 @@ for DB in "$POSTGRES_DB" "${@}"; do
 done
 
 su - postgres -c "psql -f /usr/local/bin/post.sql"
+
+# specifies a specific Email server for sending letters
+sed -i "s!adm.email_smtp_server = 'mail.company.ru'!adm.email_smtp_server = '$EMAIL_SERVER'!g" $PGDATA/postgresql.conf
+
+su - postgres -c "psql -c 'select pg_reload_conf();'"

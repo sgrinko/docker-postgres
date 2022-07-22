@@ -106,3 +106,4 @@ GRANT CONNECT ON DATABASE postgres TO write_group;
 GRANT CONNECT ON DATABASE postgres TO execution_group;
 GRANT CONNECT ON DATABASE postgres TO read_procedure_group;
 GRANT CONNECT ON DATABASE postgres TO monitoring_group;
+GRANT ALL PRIVILEGES ON TABLESPACE pg_global TO monitoring_group;

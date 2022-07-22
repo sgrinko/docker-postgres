@@ -206,7 +206,17 @@ CREATE FOREIGN TABLE IF NOT EXISTS cron.job
 )
   SERVER fdw_postgres
   OPTIONS (schema_name 'cron', table_name 'job');
-
+--
+ALTER FOREIGN TABLE cron.job ALTER COLUMN jobid OPTIONS (column_name 'jobid');
+ALTER FOREIGN TABLE cron.job ALTER COLUMN schedule OPTIONS (column_name 'schedule');
+ALTER FOREIGN TABLE cron.job ALTER COLUMN command OPTIONS (column_name 'command');
+ALTER FOREIGN TABLE cron.job ALTER COLUMN nodename OPTIONS (column_name 'nodename');
+ALTER FOREIGN TABLE cron.job ALTER COLUMN nodeport OPTIONS (column_name 'nodeport');
+ALTER FOREIGN TABLE cron.job ALTER COLUMN database OPTIONS (column_name 'database');
+ALTER FOREIGN TABLE cron.job ALTER COLUMN username OPTIONS (column_name 'username');
+ALTER FOREIGN TABLE cron.job ALTER COLUMN active OPTIONS (column_name 'active');
+ALTER FOREIGN TABLE cron.job ALTER COLUMN jobname OPTIONS (column_name 'jobname');
+--
 CREATE FOREIGN TABLE IF NOT EXISTS cron.job_run_details
 (
    jobid bigint ,
@@ -223,93 +233,128 @@ CREATE FOREIGN TABLE IF NOT EXISTS cron.job_run_details
   SERVER fdw_postgres
   OPTIONS (schema_name 'cron', table_name 'job_run_details');
 --
+ALTER FOREIGN TABLE cron.job_run_details ALTER COLUMN jobid OPTIONS (column_name 'jobid');
+ALTER FOREIGN TABLE cron.job_run_details ALTER COLUMN runid OPTIONS (column_name 'runid');
+ALTER FOREIGN TABLE cron.job_run_details ALTER COLUMN job_pid OPTIONS (column_name 'job_pid');
+ALTER FOREIGN TABLE cron.job_run_details ALTER COLUMN database OPTIONS (column_name 'database');
+ALTER FOREIGN TABLE cron.job_run_details ALTER COLUMN username OPTIONS (column_name 'username');
+ALTER FOREIGN TABLE cron.job_run_details ALTER COLUMN command OPTIONS (column_name 'command');
+ALTER FOREIGN TABLE cron.job_run_details ALTER COLUMN status OPTIONS (column_name 'status');
+ALTER FOREIGN TABLE cron.job_run_details ALTER COLUMN return_message OPTIONS (column_name 'return_message');
+ALTER FOREIGN TABLE cron.job_run_details ALTER COLUMN start_time OPTIONS (column_name 'start_time');
+ALTER FOREIGN TABLE cron.job_run_details ALTER COLUMN end_time OPTIONS (column_name 'end_time');
+--
 CREATE OR REPLACE FUNCTION cron.schedule(schedule text, command text)
   RETURNS bigint AS
-$BODY$
-   select jobid
-   from public.dblink('dblink_postgres', format('insert into cron.job (schedule, command, "database", username) values(%s, %s, %s, %s) returning jobid;', 
-                                                quote_nullable(schedule), quote_nullable(command), quote_nullable(current_database()), quote_nullable(current_user)
+$$
+declare
+	v_jobid bigint; 
+begin
+   select jobid into v_jobid  
+   from public.dblink('dblink_postgres', format('select * from cron.schedule_in_database(%L, %L, %L, %L, %L)', 
+                                                '', schedule, command, current_database(), current_user
                                               ) 
                      ) as (jobid bigint);
-$BODY$
-  LANGUAGE sql VOLATILE STRICT
+   --
+   update cron.job set jobname = null where jobid = v_jobid;
+   --
+   return v_jobid;  
+end;
+$$
+  LANGUAGE plpgsql VOLATILE STRICT
   COST 100;
-COMMENT ON FUNCTION cron.schedule(text,text) IS 'schedule a pg_cron job without job name';
+  
+COMMENT ON FUNCTION cron.schedule(text, text) IS 'schedule a pg_cron job without job name';
+
 --
+
 CREATE OR REPLACE FUNCTION cron.schedule(job_name text, schedule text, command text)
   RETURNS bigint AS
-$BODY$
+$$
    select jobid
-   from public.dblink('dblink_postgres', format('insert into cron.job (schedule, command, "database", username, jobname) values(%s, %s, %s, %s, %s) returning jobid;', 
-                                                quote_nullable(schedule), quote_nullable(command), quote_nullable(current_database()), quote_nullable(current_user),
-                                                quote_nullable(job_name)
+   from public.dblink('dblink_postgres', format('select * from cron.schedule_in_database(%L, %L, %L, %L, %L)', 
+                                                job_name, schedule, command, current_database(), current_user
                                               ) 
                      ) as (jobid bigint);
-$BODY$
+$$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
+
 COMMENT ON FUNCTION cron.schedule(text, text, text) IS 'schedule a pg_cron job with job name';
 --
-CREATE OR REPLACE FUNCTION cron.schedule_in_database(job_name text, schedule text, command text, "database" text, username text, active boolean)
-  RETURNS bigint AS
-$BODY$
-   select jobid
-   from public.dblink('dblink_postgres', format('insert into cron.job (schedule, command, "database", username, jobname, active) values(%s, %s, %s, %s, %s, ''%s'') returning jobid;', 
-                                                quote_nullable(schedule), quote_nullable(command), quote_nullable("database"), quote_nullable(username), 
-                                                quote_nullable(job_name), active
+CREATE OR REPLACE FUNCTION cron.schedule_in_database(job_name text, schedule text, command text, database text, username text, active boolean) RETURNS bigint
+    AS $$
+declare
+	v_jobid bigint; 
+begin
+   select jobid into v_jobid  
+   from public.dblink('dblink_postgres', format('select * from cron.schedule_in_database(%L, %L, %L, %L, %L, %L)', 
+                                                job_name, schedule, command, database, username, active
                                               ) 
                      ) as (jobid bigint);
-$BODY$
-  LANGUAGE sql VOLATILE STRICT
+   --
+   update cron.job 
+   set database = schedule_in_database.database,
+       active = schedule_in_database.active
+   where jobid = v_jobid;
+   --
+   return v_jobid;  
+end;
+$$
+  LANGUAGE plpgsql VOLATILE STRICT
   COST 100;
-COMMENT ON FUNCTION cron.schedule_in_database(text, text, text, text, text, boolean) IS 'schedule a pg_cron job with full parameters';
+
+COMMENT ON FUNCTION cron.schedule_in_database(job_name text, schedule text, command text, database text, username text, active boolean) IS 'schedule a pg_cron job with full parameters';
 --
 CREATE OR REPLACE FUNCTION cron.unschedule(job_id bigint)
   RETURNS boolean AS
-$BODY$
+$$
    with _del as (
      delete from cron.job where jobid = job_id 
      returning jobid
    )
    select count(*)=1 from _del;
-$BODY$
+$$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
-COMMENT ON FUNCTION cron.unschedule(int8) IS 'unschedule a pg_cron job as number job';
+  
+COMMENT ON FUNCTION cron.unschedule(bigint) IS 'unschedule a pg_cron job as number job';
+
 --
+
 CREATE OR REPLACE FUNCTION cron.unschedule(job_name text)
   RETURNS boolean AS
-$BODY$
+$$
    with _del as (
      delete from cron.job where jobname = job_name and username = current_user
      returning jobid
    )
    select count(*)=1 from _del;
-$BODY$
+$$
   LANGUAGE sql VOLATILE STRICT
   COST 100;
+  
 COMMENT ON FUNCTION cron.unschedule(text) IS 'unschedule a pg_cron job as job name';
 --
 CREATE OR REPLACE FUNCTION cron.alter_job(
-    job_id bigint,
-    schedule text DEFAULT NULL::text,
-    command text DEFAULT NULL::text,
-    "database" text DEFAULT NULL::text,
-    username text DEFAULT NULL::text,
-    active boolean DEFAULT NULL::boolean,
-    job_name text DEFAULT NULL::text
-    )
-RETURNS void AS
-$BODY$
+	job_id bigint, 
+	schedule text = NULL::text, 
+	command text = NULL::text, 
+	"database" text = NULL::text, 
+	username text = NULL::text, 
+	active boolean = NULL::boolean, 
+	job_name text = NULL::text
+) RETURNS void
+    LANGUAGE sql
+    AS $$
   update cron.job set schedule   = alter_job.schedule   where jobid=alter_job.job_id and alter_job.schedule is not null;
   update cron.job set command    = alter_job.command    where jobid=alter_job.job_id and alter_job.command is not null;
   update cron.job set "database" = alter_job."database" where jobid=alter_job.job_id and alter_job."database" is not null;
   update cron.job set username   = alter_job.username   where jobid=alter_job.job_id and alter_job.username is not null;
   update cron.job set active     = alter_job.active     where jobid=alter_job.job_id and alter_job.active is not null;
   update cron.job set jobname    = alter_job.job_name   where jobid=alter_job.job_id and alter_job.job_name is not null;
-$BODY$
-  LANGUAGE sql VOLATILE
-  COST 100;
+$$;
+
 COMMENT ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, text) IS 'Alter the job identified by job_id. Any option left as NULL will not be modified.';
 --
 
@@ -345,15 +390,10 @@ GRANT ALL ON SCHEMA cron TO postgres;
 --
 \if :IS_SETUPDB
 delete from cron.job where command ilike '%VACUUM (FREEZE,ANALYZE)%' and "database"=current_database();
-with _cmd as (
-    -- в 1-ю неделю месяца замораживаем идентификаторы транзакций, в остальные недели только собираем статистику
-    select 'vacuum JOB '||current_database() as name, '0 0 * * 0' as schedule, 'do $$ begin if date_part(''day'', now()) <= 7 then PERFORM * from pg_background_result(pg_background_launch(''VACUUM (FREEZE,ANALYZE);'')) as (result TEXT); else PERFORM * from pg_background_result(pg_background_launch(''VACUUM (ANALYZE);'')) as (result TEXT); end if; end $$;' as command
-)
-select cron.schedule(_cmd.name, _cmd.schedule, _cmd.command)
-from _cmd
-   left join cron.job j on j.command = _cmd.command and j."database"=current_database()
-where j.command is null
-;
+-- в 1-ю неделю месяца замораживаем идентификаторы транзакций, в остальные недели только собираем статистику
+select cron.schedule('vacuum JOB '||current_database(), '0 0 * * 0', 
+      'do $$ begin if date_part(''day'', now()) <= 7 then perform * from pg_background_result(pg_background_launch(''vacuum (freeze,analyze);'')) as (result text); else perform * from pg_background_result(pg_background_launch(''vacuum (analyze);'')) as (result text); end if; end $$;'
+);
 \endif
 -- ========================================================================== --
 
