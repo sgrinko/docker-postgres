@@ -4,7 +4,7 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:14.4
+FROM postgres:14.5
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
@@ -33,6 +33,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
            postgresql-$PG_MAJOR-plpgsql-check \
            postgresql-$PG_MAJOR-tds-fdw \
            libkrb5-dev \
+           postgresql-$PG_MAJOR-pg-catcheck \
       && sed -i "s/text size = 64512/text size = 1262485504/g" /etc/freetds/freetds.conf \
       && cd /tmp \
       && mkdir -p build_ext \
@@ -112,17 +113,38 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
 
 RUN mkdir -p /docker-entrypoint-initdb.d
 
+# copy bash files
 COPY ./initdb-extension.sh /docker-entrypoint-initdb.d/10_extension.sh
 COPY ./update-extension.sh /usr/local/bin
-COPY ./pre.sql /usr/local/bin
-COPY ./post.sql /usr/local/bin
-COPY ./db_all.sql /usr/local/bin
-COPY ./db_postgres.sql /usr/local/bin
-COPY ./db_notpostgres.sql /usr/local/bin
-COPY ./db_target.sql /usr/local/bin
 COPY ./backup.sh /usr/local/bin
 COPY ./show.sh /usr/local/bin
 COPY ./check_cluster.sh /usr/local/bin
+# copy sql files
+COPY ./sql/background_start.sql /usr/local/bin
+COPY ./sql/db_all.sql /usr/local/bin
+COPY ./sql/db_notpostgres.sql /usr/local/bin
+COPY ./sql/db_postgres.sql /usr/local/bin
+COPY ./sql/db_target.sql /usr/local/bin
+COPY ./sql/inf_long_running_requests.sql /usr/local/bin
+COPY ./sql/inf_long_running_requests_13plus.sql /usr/local/bin
+COPY ./sql/init_db_2_dblink_fdw.sql /usr/local/bin
+COPY ./sql/init_db_3_cron.sql /usr/local/bin
+COPY ./sql/init_db_4_fts.sql /usr/local/bin
+COPY ./sql/post.sql /usr/local/bin
+COPY ./sql/post_warning.sql /usr/local/bin
+COPY ./sql/pre.sql /usr/local/bin
+COPY ./sql/replace_char_xml.sql /usr/local/bin
+COPY ./sql/send_email.sql /usr/local/bin
+COPY ./sql/user_lookup.sql /usr/local/bin
+COPY ./sql/vw_locks.sql /usr/local/bin
+COPY ./sql/vw_partitions.sql /usr/local/bin
+COPY ./sql/vw_who.sql /usr/local/bin
+COPY ./sql/vw_who_13plus.sql /usr/local/bin
+COPY ./sql/vw_who_tree.sql /usr/local/bin
+COPY ./sql/vw_who_tree_13plus.sql /usr/local/bin
+COPY ./sql/vw_who_tree_14plus.sql /usr/local/bin
+COPY ./sql/first_db.sql /usr/local/bin
+# copy postgres files
 COPY ./pg_hba.conf /var/lib/postgresql
 COPY ./pg_ident.conf /var/lib/postgresql
 COPY ./postgresql.conf /var/lib/postgresql

@@ -6,4 +6,4 @@ docker run --rm --name my_postgres_13 --shm-size 2147483648 -p 5433:5432/tcp --s
            -v /usr/share/postgres/tsearch_data:/usr/share/postgresql/tsearch_data \
            -e POSTGRES_PASSWORD=postgres -e POSTGRES_HOST_AUTH_METHOD=trust -e DEPLOY_PASSWORD=postgres -e PGBOUNCER_PASSWORD=postgres -e TZ="Etc/UTC" \
            grufos/postgres:13.7 \
-           -c shared_preload_libraries="plpgsql_check,plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" -c shared_ispell.max_size=70MB
+           -c shared_preload_libraries="plugin_debugger,plpgsql_check,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" -c shared_ispell.max_size=70MB

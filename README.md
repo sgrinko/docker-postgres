@@ -104,7 +104,7 @@ $ docker exec -it temp_postgres_1 update-extension.sh <доп.БД>
 
 ```
 command: |
-      -c shared_preload_libraries='plpgsql_check,plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+      -c shared_preload_libraries='plugin_debugger,plpgsql_check,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
       -c shared_ispell.max_size=70MB
 ```
 
@@ -115,7 +115,7 @@ command: |
 Когда контейнер запускается с уже присоединённым каталогом кластера БД, то никаких внутренних скриптов инициализации не применяется. Однако, если есть желание "дотянуть" до стандарта по расширениям и настройкам текущего контейнера, то необходимо иметь ввиду, что для полноценной работы внутренних скриптов необходимо в настройках кластера загружать следующие shared библиотеки:
 
 ```
-shared_preload_libraries='plpgsql_check,plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+shared_preload_libraries='plugin_debugger,plpgsql_check,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
 ```
 
 а также в файле настроек указать параметр: 
@@ -163,20 +163,17 @@ if [ -f archive_active.trigger ]; then pg_probackup-14 archive-get -B /mnt/pgbak
 
 Чтобы временно приостановить выгрузку WAL файлов в бэкап-каталог нужно создать файл: `archive_pause.trigger` (это может понадобиться для временных работ с бэкапным каталогом).
 
-В контейнере есть 3 дополнительных скрипта:
+В контейнере есть 2 дополнительных скрипта:
 
 `backup.sh` - создаёт новый бэкап
 
 `show.sh` - показывает какие бэкапы есть
-
-`check_cluster.sh` - выполняет проверку кластера на возможные ошибки в структуре БД
 
 Для запуска можно использовать команды:
 
 ```
 $ docker exec -it temp_postgres_1 backup.sh
 $ docker exec -it temp_postgres_1 show.sh
-$ docker exec -it temp_postgres_1 check_cluster.sh
 ```
 
 Скрипт `backup.sh` может принимать до 3-х параметров:
@@ -192,13 +189,6 @@ $3 - признак создания автономного бэкапа тип�
 ```
 $1 - yes/no (нужно ли отсылать письмо с отчетом по текущим бэкапам)
 $2 - список email получателей письма (через пробел и обрамить двойными кавычками)
-```
-
-Скрипт check_cluster.sh может принимать до 2 -х параметров:
-
-```
-$1 - 'amcheck' включить доп.проверку кластера при помощи расширения amcheck
-$2 - 'heapallindexed' будет дополнительно проверено, что в индексе действительно представлены все кортежи кучи, которые должны в него попасть
 ```
 
 # Переменные окружения контейнера
@@ -307,7 +297,7 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
            -e DEPLOY_PASSWORD=cxzdsaewq \
            -e TZ="Etc/UTC" \
            grufos/postgres:14.4 \
-           -c shared_preload_libraries="plpgsql_check,plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
+           -c shared_preload_libraries="plugin_debugger,plpgsql_check,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
            -c shared_ispell.max_size=70MB
 ```
 
@@ -324,7 +314,7 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
        -v "/mnt/pgbak2:/mnt/pgbak" \
        -v "/usr/share/postgres/tsearch_data:/usr/share/postgresql/tsearch_data" \
        grufos/postgres:14.4 \
-       -c shared_preload_libraries="plpgsql_check,plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
+       -c shared_preload_libraries="plugin_debugger,plpgsql_check,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
        -c shared_ispell.max_size=70MB
 ```
 
@@ -356,7 +346,7 @@ services:
       dockerfile: Dockerfile
     shm_size: '2gb'
     command: |
-      -c shared_preload_libraries='plpgsql_check,plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+      -c shared_preload_libraries='plugin_debugger,plpgsql_check,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
       -c shared_ispell.max_size=70MB
     volumes:
       - "/var/lib/pgsql/14_1/data:/var/lib/postgresql/data"
@@ -402,7 +392,7 @@ services:
       dockerfile: Dockerfile
     shm_size: '2gb'
     command: |
-      -c shared_preload_libraries='plpgsql_check,plugin_debugger,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
+      -c shared_preload_libraries='plugin_debugger,plpgsql_check,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm'
       -c shared_ispell.max_size=70MB
     volumes:
       - "/var/lib/pgsql/14_1/data:/var/lib/postgresql/data"
