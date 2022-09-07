@@ -40,7 +40,6 @@ RUN apt-get update \
 
 COPY ./backup.sh /usr/local/bin
 COPY ./show.sh /usr/local/bin
-COPY ./check_cluster.sh /usr/local/bin
 
 RUN chmod +x /usr/local/bin/*.sh
 
