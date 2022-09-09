@@ -93,7 +93,7 @@ _Особенность:_
 Поэтому после такого первого старта очень желательно выполнить запуск скрипта обновления БД кластера через команду:
 
 ```
-$ docker exec -it temp_postgres_1 update-extension.sh <доп.БД>
+$ docker exec  temp_postgres_1 update-extension.sh <доп.БД>
 ```
 
 где имя `temp_postgres_1` - имя запущенного postgres-контейнера. В выводе команды docker ps это колонка `NAMES`.
@@ -139,7 +139,7 @@ CREATE DATABASE my_db WITH TEMPLATE template_extension;
 Однако права и пути поиска нельзя перенести таким образом, поэтому для дотягивания БД до стандартов контейнера нужно выполнить скрипт: `update-extension.sh` как описано чуть выше и передать как параметр этому скрипту имя созданной БД.
 
 ```
-$ docker exec -it temp_postgres_1 update-extension.sh my_db
+$ docker exec  temp_postgres_1 update-extension.sh my_db
 ```
 
 Путь поиска после выполнения скрипта в указанной БД выглядит так: `search_path = dbo, public, tiger;`
@@ -172,8 +172,8 @@ if [ -f archive_active.trigger ]; then pg_probackup-14 archive-get -B /mnt/pgbak
 Для запуска можно использовать команды:
 
 ```
-$ docker exec -it temp_postgres_1 backup.sh
-$ docker exec -it temp_postgres_1 show.sh
+$ docker exec  temp_postgres_1 backup.sh
+$ docker exec  temp_postgres_1 show.sh
 ```
 
 Скрипт `backup.sh` может принимать до 3-х параметров:
