@@ -9,7 +9,7 @@ ENV DEBIAN_RELEASE buster
 ENV PG_MAJOR 13
 ENV BACKUP_PATH /mnt/pgbak
 # version mamonsu
-ENV VERSION 3.4.0
+ENV VERSION 3.5.2
 
 # explicitly set user/group IDs
 RUN set -eux; \
@@ -18,6 +18,8 @@ RUN set -eux; \
     mkdir -p /var/lib/postgresql/data;
 
 COPY ./pg_probackup.py /usr/local/bin
+COPY ./config.py /usr/local/bin
+COPY ./wal.py /usr/local/bin
 
 RUN apt-get update \
       && apt-get install -y wget gnupg sendemail dumb-init make dpkg-dev debhelper python3-dev python3-setuptools\
@@ -34,6 +36,8 @@ RUN apt-get update \
       && wget --quiet https://github.com/postgrespro/mamonsu/archive/refs/tags/$VERSION.tar.gz \
       && tar xzf /tmp/build_mamonsu/$VERSION.tar.gz --directory /tmp/build_mamonsu/ \
       && cp /usr/local/bin/pg_probackup.py /tmp/build_mamonsu/mamonsu-$VERSION/mamonsu/plugins/system/linux/pg_probackup.py \
+      && cp /usr/local/bin/config.py /tmp/build_mamonsu/mamonsu-$VERSION/mamonsu/lib/config.py \
+      && cp /usr/local/bin/wal.py /tmp/build_mamonsu/mamonsu-$VERSION/mamonsu/plugins/pgsql/wal.py \
       && cd /tmp/build_mamonsu/mamonsu-$VERSION && python3 setup.py build && python3 setup.py install \
       && ln -s /usr/local/bin/mamonsu /usr/bin/mamonsu \
       && mkdir -p /var/log/mamonsu \
@@ -60,8 +64,10 @@ RUN apt-get update \
 COPY ./mamonsu_start.sh /usr/local/bin
 COPY ./agent.conf /usr/local/bin/agent.conf.tmpl
 COPY ./pg_partition.py /usr/local/bin/pg_partition.py.tmpl
+COPY ./pg_jobs_check.py /usr/local/bin/pg_jobs_check.py.tmpl
 COPY ./pre.sql /var/lib/postgresql
 COPY ./mamonsu_right_add.sql /var/lib/postgresql
+COPY ./bootstrap_post.sql /var/lib/postgresql
 
 RUN chown postgres:postgres /var/lib/postgresql/*.sql \
     && chmod +x /usr/local/bin/*.sh

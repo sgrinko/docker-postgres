@@ -19,6 +19,11 @@ ALTER EXTENSION pg_background UPDATE;
 CREATE SCHEMA IF NOT EXISTS util;
 COMMENT ON SCHEMA util IS 'Схема для хранения различных функций и представлений общего назначения';
 --
+GRANT USAGE ON SCHEMA util TO execution_group;
+GRANT USAGE ON SCHEMA util TO read_procedure_group;
+GRANT USAGE ON SCHEMA util TO readonly_group;
+GRANT USAGE ON SCHEMA util TO write_group;
+--
 CREATE SCHEMA IF NOT EXISTS pgbouncer;
 COMMENT ON SCHEMA pgbouncer IS 'Схема для хранения функций пула коннектов';
 GRANT CONNECT ON DATABASE :"dbconnect" TO pgbouncer;
