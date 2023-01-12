@@ -36,13 +36,13 @@ fi
 # copy start configuration files to pgdata
 if [ 'md5' != "$POSTGRES_HOST_AUTH_METHOD" ]; then
     # create entrypoint for trust or another method access
-    sed "s/md5/$POSTGRES_HOST_AUTH_METHOD/g" /var/lib/postgresql/pg_hba.conf > $PGDATA/pg_hba.conf
+    sed "s/md5/$POSTGRES_HOST_AUTH_METHOD/g" /usr/local/bin/pg_hba.conf > $PGDATA/pg_hba.conf
 else
     # the default is password entry (md5)
-    cp -f /var/lib/postgresql/pg_hba.conf $PGDATA
+    cp -f /usr/local/bin/pg_hba.conf $PGDATA
 fi
-cp -f /var/lib/postgresql/pg_ident.conf $PGDATA
-cp -f /var/lib/postgresql/postgresql.conf $PGDATA
+cp -f /usr/local/bin/pg_ident.conf $PGDATA
+cp -f /usr/local/bin/postgresql.conf $PGDATA
 if [ -n "$TZ" ]; then
     # specifies a specific time zone for the server time zone
     sed -i "s!timezone = 'UTC'!timezone = '$TZ'!g" $PGDATA/postgresql.conf

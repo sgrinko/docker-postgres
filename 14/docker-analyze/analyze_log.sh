@@ -28,6 +28,7 @@ if [ "$STAT_STATEMENTS" = "true" ]; then
     echo "" >> $REPORT_PATH/${curr_date}_${DB}_report.txt
     echo "TOP duration statements on DB: $DB" >> $REPORT_PATH/${curr_date}_${DB}_report.txt
     echo "" >> $REPORT_PATH/${curr_date}_${DB}_report.txt
+    echo "psql -h ${PGHOST:-127.0.0.1} -p ${PGPORT:-5432} -f $SCRIPT_PATH/pg_stat_statements_report.sql -qt $DB"
     psql -h ${PGHOST:-127.0.0.1} -p ${PGPORT:-5432} -f $SCRIPT_PATH/pg_stat_statements_report.sql -qt $DB >> $REPORT_PATH/${curr_date}_${DB}_report.txt
     bzip2 -f -9 $REPORT_PATH/${curr_date}_${DB}_report.txt
   done
@@ -73,23 +74,27 @@ fi
 
 DAY=`date -d "-1 day" +%a`
 
+if [ -f /var/log/mamonsu/mamonsu.log ]; then
+    echo ""
+    echo "# -- =========================== --"
+    echo "# mamonsu.log -> mamonsu.log.$DAY.bz ..."
+    mv -f /var/log/mamonsu/mamonsu.log /var/log/mamonsu/mamonsu.log.$DAY
+    bzip2 -f -9 /var/log/mamonsu/mamonsu.log.$DAY
+    echo "#       please restart"
+    echo "#     container mamonsu..."
+    echo "# -- =========================== --"
+fi
+if [ -f /var/log/pgbouncer/pgbouncer.log ]; then
+    echo ""
+    echo "# -- =========================== --"
+    echo "# pgbouncer.log -> pgbouncer.log.$DAY.bz ..."
+    mv -f /var/log/pgbouncer/pgbouncer.log /var/log/pgbouncer/pgbouncer.log.$DAY
+    bzip2 -f -9 /var/log/pgbouncer/pgbouncer.log.$DAY
+    echo "# -- =========================== --"
+fi
 echo ""
 echo "# -- =========================== --"
-echo "# mamonsu.log -> mamonsu.log.$DAY.bz ..."
-mv -f /var/log/mamonsu/mamonsu.log /var/log/mamonsu/mamonsu.log.$DAY
-bzip2 -f -9 /var/log/mamonsu/mamonsu.log.$DAY
-echo "# пожалуйста выполните рестарт контейнера mamonsu ..."
-echo "# -- =========================== --"
-echo ""
-echo "# -- =========================== --"
-echo "# pgbouncer.log -> pgbouncer.log.$DAY.bz ...(blocked)"
-#mv -f /var/log/pgbouncer/pgbouncer.log /var/log/pgbouncer/pgbouncer.log.$DAY
-#bzip2 -f -9 /var/log/pgbouncer/pgbouncer.log.$DAY
-echo "# -- =========================== --"
-echo ""
-echo "# -- =========================== --"
-echo "# pgbouncer send HUP signal...(blocked)"
-#echo "psql -h ${PGBHOST:-127.0.0.1} -p ${PGBPORT:-6432} -c 'reload;' pgbouncer"
-#psql -h ${PGBHOST:-127.0.0.1} -p ${PGBPORT:-6432} -c 'reload;' pgbouncer
+echo "#       please send HUP signal"
+echo "#     to container pgbouncer..."
 echo "# -- =========================== --"
 

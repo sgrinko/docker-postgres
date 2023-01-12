@@ -11,6 +11,7 @@ select not pg_is_in_recovery() as is_master \gset
                         else replace(current_setting('shared_buffers'), 'MB', '')::int
                    end * 0.0117 || ' MB''' as highpage_mb \gset
     ALTER FUNCTION mamonsu.buffer_cache() SET WORK_MEM = :highpage_mb; -- for shared_buffers 16 Гб 200 Мб
+    GRANT USAGE ON SCHEMA public TO mamonsu;
   \endif
   -- we give the right to connect for the role of mamonsu
   do $$ begin execute 'GRANT CONNECT ON DATABASE "' || current_database() || '" TO mamonsu; '; end $$;

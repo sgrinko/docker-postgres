@@ -1,11 +1,11 @@
 # Based on:
 # https://hub.docker.com/_/debian
 #
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
-ENV DEBIAN_RELEASE buster
+ENV DEBIAN_RELEASE bullseye
 ENV PG_MAJOR 13
 ENV BACKUP_PATH /mnt/pgbak
 
@@ -16,12 +16,12 @@ RUN set -eux; \
     mkdir -p /var/lib/postgresql/data;
 
 RUN apt-get update \
-      && apt-get install -y wget gnupg sendemail bzip2 pgbadger \
+      && apt-get install -y --no-install-recommends ca-certificates wget gnupg sendemail bzip2 pgbadger \
       # ... install psql ...
       && echo "deb http://apt.postgresql.org/pub/repos/apt $DEBIAN_RELEASE-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
       && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
       && apt-get update \
-      && apt-get install -y postgresql-client-$PG_MAJOR \
+      && apt-get install -y --no-install-recommends postgresql-client-$PG_MAJOR \
       # ... create dirs ...
       && mkdir -p /var/log/postgresql/report \
       && mkdir -p /var/log/pgbouncer \
@@ -31,7 +31,8 @@ RUN apt-get update \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
-      && apt-get -y autoclean
+      && apt-get -y autoclean \
+      && rm -rf /var/cache/apt
 
 COPY ./analyze_log.sh /usr/local/bin
 COPY ./pg_stat_statements_report.sql /var/lib/postgresql

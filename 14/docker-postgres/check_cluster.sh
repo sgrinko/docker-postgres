@@ -67,6 +67,8 @@ function send_email()
        tail -n 100 $curr_log >> $REPORT_PATH/${curr_date}_check_cluster.txt
        # отправляем письмо
        (echo "<html><pre> $1 <br>" ; cat $REPORT_PATH/${curr_date}_check_cluster.txt ; echo '</pre></html>';) | sendEmail -o message-content-type=html -o message-charset=utf-8 -f "$EMAIL_HOSTNAME" -t $EMAILTO -s $EMAIL_SERVER -u "$2 ($db_name)"
+    else
+	    cat $REPORT_PATH/${curr_date}_check_cluster.txt
     fi
 }
 

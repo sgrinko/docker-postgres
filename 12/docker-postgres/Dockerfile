@@ -4,23 +4,24 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:12.12
+FROM postgres:12.13
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
-ENV DEBIAN_RELEASE buster
+ENV DEBIAN_RELEASE bullseye
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
 ENV RUM_VERSION 1.3.11
 
 RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8 \
       && apt-get update \
-      && apt-get install -y jq wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop mc systemtap-sdt-dev \
-      && echo "deb [arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
-      && wget -O - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | apt-key add - \
+      && apt-get install -y --no-install-recommends ca-certificates jq wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop mc systemtap-sdt-dev vim \
+      && echo "deb [ trusted=yes arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
+      && wget --no-check-certificate -O - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/GPG-KEY-PG_PROBACKUP.gpg --import \
+      && chmod 644 /etc/apt/trusted.gpg.d/GPG-KEY-PG_PROBACKUP.gpg \
       && apt-get update \
       && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
       && apt-get install -y --no-install-recommends \
@@ -34,9 +35,10 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
            postgresql-$PG_MAJOR-tds-fdw \
            libkrb5-dev \
            postgresql-$PG_MAJOR-pg-catcheck \
-      && sed -i "s/text size = 64512/text size = 1262485504/g" /etc/freetds/freetds.conf \
+      && sed -i "s/;\ttext size = 64512/\ttext size = 1262485504/g" /etc/freetds/freetds.conf \
       && cd /tmp \
       && mkdir -p build_ext \
+      && git config --global http.sslverify false \
       # ====== hunspell_dicts
       && cd build_ext \
       && git clone https://github.com/postgrespro/hunspell_dicts \
@@ -109,50 +111,28 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
-      && apt-get -y autoclean
+      && apt-get -y autoclean \
+      && rm -rf /var/cache/apt
 
 RUN mkdir -p /docker-entrypoint-initdb.d
 
+COPY ./locales.conf /etc/locales.conf
 # copy bash files
 COPY ./initdb-extension.sh /docker-entrypoint-initdb.d/10_extension.sh
-COPY ./update-extension.sh /usr/local/bin
-COPY ./backup.sh /usr/local/bin
-COPY ./show.sh /usr/local/bin
-COPY ./check_cluster.sh /usr/local/bin
+COPY ./update-extension.sh /usr/local/bin/
+COPY ./backup.sh /usr/local/bin/
+COPY ./show.sh /usr/local/bin/
+COPY ./check_cluster.sh /usr/local/bin/
 # copy sql files
-COPY ./sql/background_start.sql /usr/local/bin
-COPY ./sql/db_all.sql /usr/local/bin
-COPY ./sql/db_notpostgres.sql /usr/local/bin
-COPY ./sql/db_postgres.sql /usr/local/bin
-COPY ./sql/db_target.sql /usr/local/bin
-COPY ./sql/inf_long_running_requests.sql /usr/local/bin
-COPY ./sql/inf_long_running_requests_13plus.sql /usr/local/bin
-COPY ./sql/init_db_2_dblink_fdw.sql /usr/local/bin
-COPY ./sql/init_db_3_cron.sql /usr/local/bin
-COPY ./sql/init_db_4_fts.sql /usr/local/bin
-COPY ./sql/post.sql /usr/local/bin
-COPY ./sql/post_warning.sql /usr/local/bin
-COPY ./sql/pre.sql /usr/local/bin
-COPY ./sql/replace_char_xml.sql /usr/local/bin
-COPY ./sql/send_email.sql /usr/local/bin
-COPY ./sql/user_lookup.sql /usr/local/bin
-COPY ./sql/vw_locks.sql /usr/local/bin
-COPY ./sql/vw_partitions.sql /usr/local/bin
-COPY ./sql/vw_who.sql /usr/local/bin
-COPY ./sql/vw_who_13plus.sql /usr/local/bin
-COPY ./sql/vw_who_tree.sql /usr/local/bin
-COPY ./sql/vw_who_tree_13plus.sql /usr/local/bin
-COPY ./sql/vw_who_tree_14plus.sql /usr/local/bin
-COPY ./sql/first_db.sql /usr/local/bin
+COPY ./sql/*.sql /usr/local/bin/
 # copy postgres files
-COPY ./pg_hba.conf /var/lib/postgresql
-COPY ./pg_ident.conf /var/lib/postgresql
-COPY ./postgresql.conf /var/lib/postgresql
-COPY ./postgres /usr/local/sbin
+COPY ./*.conf /usr/local/bin/
+COPY ./postgres /usr/local/sbin/
 
 RUN chmod +x /usr/local/bin/*.sh \
     && chmod +x /usr/local/sbin/postgres \
-    && chmod +x /docker-entrypoint-initdb.d/*.sh
+    && chmod +x /docker-entrypoint-initdb.d/*.sh \
+    && chown postgres:postgres /usr/local/bin/pg_hba.conf /usr/local/bin/pg_ident.conf /usr/local/bin/postgresql.conf
 
 # We set the default STOPSIGNAL to SIGINT, which corresponds to what PostgreSQL
 # calls "Fast Shutdown mode" wherein new connections are disallowed and any

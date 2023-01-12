@@ -22,8 +22,8 @@ if ! docker image ls | grep "grufos/postgres" ; then
     echo "    push ..."
     docker tag 12_postgres:latest grufos/postgres:latest
 #    docker push grufos/postgres:latest
-    docker tag grufos/postgres:latest grufos/postgres:12.12
-    docker push grufos/postgres:12.12
+    docker tag grufos/postgres:latest grufos/postgres:12.13
+    docker push grufos/postgres:12.13
 fi
 
 # pganalyze
@@ -34,8 +34,8 @@ if ! docker image ls | grep "grufos/pganalyze" ; then
     echo "    push ..."
     docker tag 12_analyze:latest grufos/pganalyze:latest
 #    docker push grufos/pganalyze:latest
-    docker tag grufos/pganalyze:latest grufos/pganalyze:12.12
-    docker push grufos/pganalyze:12.12
+    docker tag grufos/pganalyze:latest grufos/pganalyze:12.13
+    docker push grufos/pganalyze:12.13
 fi
 
 # pgprobackup
@@ -46,8 +46,8 @@ if ! docker image ls | grep "grufos/pgprobackup" ; then
     echo "    push ..."
     docker tag 12_pgprobackup_backup:latest grufos/pgprobackup:latest
 #    docker push grufos/pgprobackup:latest
-    docker tag grufos/pgprobackup:latest grufos/pgprobackup:12.12_2.5.5
-    docker push grufos/pgprobackup:12.12_2.5.5
+    docker tag grufos/pgprobackup:latest grufos/pgprobackup:12.13_2.5.8
+    docker push grufos/pgprobackup:12.13_2.5.8
 fi
 
 # pgprorestore
@@ -58,8 +58,8 @@ if ! docker image ls | grep "grufos/pgprorestore" ; then
     echo "    push ..."
     docker tag 12_pgprobackup_restore:latest grufos/pgprorestore:latest
 #    docker push grufos/pgprorestore:latest
-    docker tag grufos/pgprorestore:latest grufos/pgprorestore:12.12_2.5.5
-    docker push grufos/pgprorestore:12.12_2.5.5
+    docker tag grufos/pgprorestore:latest grufos/pgprorestore:12.13_2.5.8
+    docker push grufos/pgprorestore:12.13_2.5.8
 fi
 
 # mamonsu
@@ -70,6 +70,6 @@ if ! docker image ls | grep "grufos/mamonsu" ; then
     echo "    push ..."
     docker tag 12_mamonsu:latest grufos/mamonsu:latest
 #    docker push grufos/mamonsu:latest
-    docker tag grufos/mamonsu:latest grufos/mamonsu:12_3.4.0
-    docker push grufos/mamonsu:12_3.4.0
+    docker tag grufos/mamonsu:latest grufos/mamonsu:12_3.5.2
+    docker push grufos/mamonsu:12_3.5.2
 fi

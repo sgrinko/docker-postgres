@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# this is start file for postgres
+
+# Check on the need to initialize the catalog of the FTS
+tar -xzkf /usr/share/postgresql/$PG_MAJOR/tsearch_data.tar.gz -C /usr/share/postgresql/tsearch_data/ > /dev/null 2>&1
+
+# start postgres process ...
+exec /usr/lib/postgresql/$PG_MAJOR/bin/postgres ${@}

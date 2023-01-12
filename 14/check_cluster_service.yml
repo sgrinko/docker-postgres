@@ -1,7 +1,7 @@
 version: '3.5'
 services:
 
-  pgprobackup_backup:
+  pgprobackup_check_cluster:
     build:
       context: ./docker-pgprobackup
       dockerfile: Dockerfile

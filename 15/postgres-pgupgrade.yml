@@ -1,0 +1,16 @@
+version: '3.5'
+services:
+
+  pgupgrade:
+
+#    image: grufos/pgupgrade:15.1
+    build:
+      context: ./docker-pgupgrade
+      dockerfile: Dockerfile
+    stop_grace_period: 60s
+    shm_size: '2gb'
+    volumes:
+      - "/var/lib/pgsql/15_1:/var/lib/postgresql"
+      - "/var/log/postgresql1:/var/log/postgresql"
+      - "/usr/share/postgres/14_1/tsearch_data:/usr/share/postgresql/14/tsearch_data"
+      - "/usr/share/postgres/15_1/tsearch_data:/usr/share/postgresql/15/tsearch_data"

@@ -1,0 +1,20 @@
+version: '3.5'
+services:
+
+  pgprobackup_restore:
+    build:
+      context: ./docker-pgprorestore
+      dockerfile: Dockerfile
+
+    volumes:
+      - "/var/lib/pgsql/15_1/data:/var/lib/postgresql/data"
+      - "/mnt/pgbak2/:/mnt/pgbak/"
+
+    environment:
+      TZ: "Europe/Moscow"
+      BACKUP_THREADS: "4"
+# восстановление на указанную точку во времени
+#      TARGET_TIME: "2020-10-22 06:00:00"
+# восстановление на указанный срез в архиве
+#      TARGET_ID: "QILQ45"
+# если ни один из этих параметров не указан, то восстановление выполняется на состояние - latest (самое последнее состояние)

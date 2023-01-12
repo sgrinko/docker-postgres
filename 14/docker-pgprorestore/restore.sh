@@ -34,15 +34,15 @@ echo 'start restore server ...'
 echo ================================
 
 if [ -n "$TARGET_ID" ] ; then
-    su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR restore --recovery-target-action=promote --skip-block-validation --no-validate --threads=$BACKUP_THREADS --backup-path=$BACKUP_PATH --instance=$PG_MAJOR -D $PGDATA --recovery-target=immediate -i $TARGET_ID"
+    su - postgres -c "TZ=$TZ /usr/bin/pg_probackup-$PG_MAJOR restore --recovery-target-action=promote --skip-block-validation --no-validate --threads=$BACKUP_THREADS --backup-path=$BACKUP_PATH --instance=$PG_MAJOR -D $PGDATA --recovery-target=immediate -i $TARGET_ID"
     echo "===================================="
     echo "restore to ID: $TARGET_ID"
 elif [ -n "$TARGET_TIME" ] ; then
-    su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR restore --recovery-target-action=promote --skip-block-validation --no-validate --threads=$BACKUP_THREADS --backup-path=$BACKUP_PATH --instance=$PG_MAJOR -D $PGDATA --recovery-target-time=\"$TARGET_TIME\""
+    su - postgres -c "TZ=$TZ /usr/bin/pg_probackup-$PG_MAJOR restore --recovery-target-action=promote --skip-block-validation --no-validate --threads=$BACKUP_THREADS --backup-path=$BACKUP_PATH --instance=$PG_MAJOR -D $PGDATA --recovery-target-time=\"$TARGET_TIME\""
     echo "===================================="
     echo "restore to time: $TARGET_TIME"
 else
-    su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR restore --recovery-target-action=promote --skip-block-validation --no-validate --threads=$BACKUP_THREADS --backup-path=$BACKUP_PATH --instance=$PG_MAJOR -D $PGDATA --recovery-target=latest"
+    su - postgres -c "TZ=$TZ /usr/bin/pg_probackup-$PG_MAJOR restore --recovery-target-action=promote --skip-block-validation --no-validate --threads=$BACKUP_THREADS --backup-path=$BACKUP_PATH --instance=$PG_MAJOR -D $PGDATA --recovery-target=latest"
     echo "===================================="
     echo "restore to latest"
 fi

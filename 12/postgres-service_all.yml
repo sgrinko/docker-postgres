@@ -16,7 +16,7 @@ services:
       - "/var/lib/pgsql/12_1/data:/var/lib/postgresql/data"
       - "/var/log/postgresql1:/var/log/postgresql"
       - "/mnt/pgbak2/:/mnt/pgbak/"
-      - "/usr/share/postgres/tsearch_data:/usr/share/postgresql/tsearch_data"
+      - "/usr/share/postgres/12_1/tsearch_data:/usr/share/postgresql/tsearch_data"
     ports:
       - "5433:5432"
     environment:
