@@ -24,7 +24,7 @@ CREATE FOREIGN TABLE IF NOT EXISTS cron.job
    "database" text    OPTIONS (column_name 'database') NOT NULL,
    username   text    OPTIONS (column_name 'username') NOT NULL,
    active     boolean OPTIONS (column_name 'active')   NOT NULL,
-   jobname    name    OPTIONS (column_name 'jobname')
+   jobname    text    OPTIONS (column_name 'jobname')
 )
   SERVER fdw_postgres
   OPTIONS (schema_name 'cron', table_name 'job');
