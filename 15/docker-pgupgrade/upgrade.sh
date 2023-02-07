@@ -110,6 +110,7 @@ parameter_copy "max_worker_processes"
 parameter_copy "max_parallel_maintenance_workers"
 parameter_copy "max_parallel_workers_per_gather"
 parameter_copy "max_parallel_workers"
+parameter_copy "cron.timezone"
 
 echo
 echo 'старт check...'

@@ -46,6 +46,7 @@ cp -f /usr/local/bin/postgresql.conf $PGDATA
 if [ -n "$TZ" ]; then
     # specifies a specific time zone for the server time zone
     sed -i "s!timezone = 'UTC'!timezone = '$TZ'!g" $PGDATA/postgresql.conf
+    sed -i "s!cron.timezone = 'UTC'!cron.timezone = '$TZ'!g" $PGDATA/postgresql.conf
 fi
 
 # specifies a specific Email server for sending letters

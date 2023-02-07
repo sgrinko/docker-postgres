@@ -1,3 +1,4 @@
+#!/bin/bash
 docker run -p 127.0.0.1:5433:5432/tcp --shm-size 2147483648 \
            -e POSTGRES_PASSWORD=postgres \
            -e POSTGRES_HOST_AUTH_METHOD=trust \
