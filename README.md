@@ -347,7 +347,7 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
            -e POSTGRES_HOST_AUTH_METHOD=trust \
            -e DEPLOY_PASSWORD=cxzdsaewq \
            -e TZ="Etc/UTC" \
-           grufos/postgres:15.1 \
+           grufos/postgres:15.2 \
            -c shared_preload_libraries="plugin_debugger,plpgsql_check,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
            -c shared_ispell.max_size=70MB
 ```
@@ -364,7 +364,7 @@ docker run -d --name dev-db -p 5433:5432/tcp --shm-size 2147483648 \
        -v "/var/log/postgresql:/var/log/postgresql" \
        -v "/mnt/pgbak2:/mnt/pgbak" \
        -v "/usr/share/postgres/tsearch_data:/usr/share/postgresql/tsearch_data" \
-       grufos/postgres:15.1 \
+       grufos/postgres:15.2 \
        -c shared_preload_libraries="plugin_debugger,plpgsql_check,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" \
        -c shared_ispell.max_size=70MB
 ```
@@ -391,7 +391,7 @@ services:
  
   postgres:
 
-#    image: grufos/postgres:15.1
+#    image: grufos/postgres:15.2
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile
@@ -437,7 +437,7 @@ services:
 
   postgres:
 
-#    image: grufos/postgres:15.1
+#    image: grufos/postgres:15.2
     build:
       context: ./docker-postgres
       dockerfile: Dockerfile
@@ -628,7 +628,7 @@ services:
 
   pgupgrade:
 
-#    image: grufos/pgupgrade:15.1
+#    image: grufos/pgupgrade:15.2
     build:
       context: ./docker-pgupgrade
       dockerfile: Dockerfile
@@ -648,6 +648,6 @@ docker run --rm --name upgrade-db --shm-size 2147483648 \
        -v "/var/log/postgresql1:/var/log/postgresql" \
        -v "/usr/share/postgres/14/tsearch_data:/usr/share/postgresql/14/tsearch_data" \
        -v "/usr/share/postgres/15/tsearch_data:/usr/share/postgresql/15/tsearch_data" \
-       grufos/pgpostgres:15.1
+       grufos/pgpostgres:15.2
 #      15_pgupgrade
 ```

@@ -23,10 +23,6 @@ cd docker-pgprorestore
 docker build . -t ${VERSION}_pgprobackup_restore:latest
 cd ..
 
-cd docker-pgupgrade
-docker build . -t ${VERSION}_pgupgrade:latest
-cd ..
-
 cd docker-postgres
 docker build . -t ${VERSION}_postgres:latest
 cd ..
