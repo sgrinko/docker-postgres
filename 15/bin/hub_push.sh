@@ -1,20 +1,20 @@
 #!/bin/bash
 VERSION=15
-MINOR=1
+MINOR=2
 
 set -euo pipefail
 
 # pgbouncer
-echo "========="
-echo "pgbouncer"
-echo "========="
-if ! docker image ls | grep "grufos/pgbouncer" ; then
-    echo "    push ..."
-    docker tag ${VERSION}_pgbouncer:latest grufos/pgbouncer:latest
-    docker push grufos/pgbouncer:latest
-    docker tag grufos/pgbouncer:latest grufos/pgbouncer:1.18.0
-    docker push grufos/pgbouncer:1.18.0
-fi
+#echo "========="
+#echo "pgbouncer"
+#echo "========="
+#if ! docker image ls | grep "grufos/pgbouncer" ; then
+#    echo "    push ..."
+#    docker tag ${VERSION}_pgbouncer:latest grufos/pgbouncer:latest
+#    docker push grufos/pgbouncer:latest
+#    docker tag grufos/pgbouncer:latest grufos/pgbouncer:1.18.0
+#    docker push grufos/pgbouncer:1.18.0
+#fi
 
 # postgres
 echo "========"

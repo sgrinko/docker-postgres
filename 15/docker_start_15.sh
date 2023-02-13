@@ -9,5 +9,5 @@ docker run --rm --name my_postgres_15 --shm-size 2147483648 -p 5433:5432/tcp --s
            -v /mnt/pgbak2/:/mnt/pgbak \
            -v /usr/share/postgres/15_1/tsearch_data:/usr/share/postgresql/tsearch_data \
            -e POSTGRES_PASSWORD=postgres -e POSTGRES_HOST_AUTH_METHOD=trust -e DEPLOY_PASSWORD=postgres -e PGBOUNCER_PASSWORD=postgres -e TZ="Etc/UTC" \
-           grufos/postgres:15.1 \
+           grufos/postgres:15.2 \
            -c shared_preload_libraries="plugin_debugger,plpgsql_check,pg_stat_statements,auto_explain,pg_buffercache,pg_cron,shared_ispell,pg_prewarm" -c shared_ispell.max_size=70MB

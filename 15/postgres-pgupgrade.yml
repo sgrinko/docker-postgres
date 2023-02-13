@@ -3,7 +3,7 @@ services:
 
   pgupgrade:
 
-#    image: grufos/pgupgrade:15.1
+#    image: grufos/pgupgrade:15.2
     build:
       context: ./docker-pgupgrade
       dockerfile: Dockerfile

@@ -1,6 +1,6 @@
 #!/bin/bash
 VERSION=14
-MINOR=6
+MINOR=7
 
 set -euo pipefail
 
