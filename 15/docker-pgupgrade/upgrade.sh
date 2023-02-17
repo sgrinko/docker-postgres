@@ -40,6 +40,49 @@ if [ "$(id -u)" = '0' ]; then
     exec gosu postgres "$BASH_SOURCE" "$@"
 fi
 
+# проверка входных каталогов на всякий случай....
+# каталог старой версии должен содержать ...
+COUNT_DIR=`ls -l $OLD_DB | grep "^d" | wc -l`
+if [ "$COUNT_DIR" -lt "17" ]; then
+    echo
+    echo "Каталог текущей версии: $OLD_DB"
+    echo "Этот каталог должен указывать на содержимое кластера (ожидается не меньше, чем 17 каталогов)"
+    exit 1
+fi
+if ! [ -f "$OLD_DB/PG_VERSION" ]; then
+    echo
+    echo "Каталог текущей версии: $OLD_DB"
+    echo "Этот каталог должен содержать файл PG_VERSION"
+    exit 1
+fi
+COUNT_DIR=`cat $OLD_DB/PG_VERSION`
+if [ "$COUNT_DIR" != "$PG_MAJOR_OLD" ]; then
+    echo
+    echo "Каталог текущей версии: $OLD_DB"
+    echo "Этот каталог должен должен принадлежать версии кластера $PG_MAJOR_OLD"
+    echo "Обнаружена версия: $COUNT_DIR"
+    exit 1
+fi
+if [ -f "$OLD_DB/postmaster.pid" ]; then
+    echo
+    echo "Каталог текущей версии: $OLD_DB"
+    echo "Обнаружен файл postmaster.pid !"
+    echo "Текущий кластер завершил работу аварийно или сейчас работает!"
+    echo "Запустите текущий кластер (при необходимости) и завершите его работу штатно."
+    exit 1
+fi
+# каталог новой версии всегда должен быть пуст...
+if [ -d $NEW_DB ]; then
+    COUNT_DIR=`ls -la $NEW_DB | wc -l`
+    if [ "$COUNT_DIR" != "3" ]; then
+        echo
+        echo "Каталог новой версии: $NEW_DB"
+        echo "Этот каталог должен быть полностью пуст!"
+        ls -la $NEW_DB
+        exit 1
+    fi
+fi
+
 # тестируем возможность работы с hard link на подключенных томах
 LINK_OPTIONS="--link"
 if ! ln "$PGDATAOLD/global/1213" "$PGDATANEW/1213" > /dev/null 2>&1 ; then
@@ -106,6 +149,8 @@ parameter_copy "wal_level"
 parameter_copy "effective_cache_size"
 parameter_copy "maintenance_work_mem"
 parameter_copy "autovacuum_work_mem"
+parameter_copy "max_prepared_transactions"
+parameter_copy "logical_decoding_work_mem"
 parameter_copy "max_worker_processes"
 parameter_copy "max_parallel_maintenance_workers"
 parameter_copy "max_parallel_workers_per_gather"
