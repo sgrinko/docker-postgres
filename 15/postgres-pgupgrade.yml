@@ -14,3 +14,5 @@ services:
       - "/var/log/postgresql1:/var/log/postgresql"
       - "/usr/share/postgres/14_1/tsearch_data:/usr/share/postgresql/14/tsearch_data"
       - "/usr/share/postgres/15_1/tsearch_data:/usr/share/postgresql/15/tsearch_data"
+    environment:
+      PGDATACOPY_MODE: HardLink

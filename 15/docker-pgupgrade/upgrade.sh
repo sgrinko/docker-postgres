@@ -83,13 +83,29 @@ if [ -d $NEW_DB ]; then
     fi
 fi
 
-# тестируем возможность работы с hard link на подключенных томах
-LINK_OPTIONS="--link"
-if ! ln "$PGDATAOLD/global/1213" "$PGDATANEW/1213" > /dev/null 2>&1 ; then
-    # нет возможности делать HardLink между томами, поэтому опцию --link отключаем
-    LINK_OPTIONS=""
-else
-    rm -f "$PGDATANEW/1213"
+# преобразуем в верхний регистр
+DATACOPY_MODE="${PGDATACOPY_MODE^^}"
+# проверяем...
+LINK_OPTIONS=""
+if [ "$DATACOPY_MODE" != "COPY" ]; then 
+    # тестируем возможность работы с hard link на подключенных томах
+    # для режима AUTO или HARDLINK
+    LINK_OPTIONS="--link"
+    if ! ln "$PGDATAOLD/global/1213" "$PGDATANEW/1213" > /dev/null 2>&1 ; then
+        # нет возможности делать HardLink между томами, поэтому опцию --link отключаем
+        LINK_OPTIONS=""
+    else
+        rm -f "$PGDATANEW/1213"
+    fi
+fi
+
+if [ "$DATACOPY_MODE" = "HARDLINK" ]; then
+    if [ "$LINK_OPTIONS" = "" ]; then
+        echo
+        echo '--             Копирование всего кластера запрещено!             --'
+        echo '--                    HardLink недоступен!                       --'
+        exit 1        
+    fi
 fi
 
 if [ ! -s "$PGDATANEW/PG_VERSION" ]; then
@@ -123,10 +139,12 @@ echo '-- ============================================================= --'
 echo
 echo '-- ============================================================= --'
 if [ "$LINK_OPTIONS" = "" ] ; then
-echo '--             Режим полного копирования кластера!               --'
-echo '--                    HardLink недоступен!                       --'
+    echo '--             Режим полного копирования кластера!               --'
+    if [ "$DATACOPY_MODE" != "COPY" ]; then 
+        echo '--                    HardLink недоступен!                       --'
+    fi
 else
-echo '--                      HardLink включен                         --'
+    echo '--                      HardLink включен                         --'
 fi
 echo '-- ============================================================= --'
 echo

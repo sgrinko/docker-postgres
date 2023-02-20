@@ -18,6 +18,9 @@ ENV PGDATANEW /var/lib/postgresql/$PG_MAJOR/data
 ENV TSEARCHDATAOLD /usr/share/postgresql/$PG_MAJOR_OLD/tsearch_data
 ENV TSEARCHDATANEW /usr/share/postgresql/$PG_MAJOR/tsearch_data
 
+# режим копирования каталога PGDATA: HARDLINK, AUTO, COPY
+ENV PGDATACOPY_MODE HARDLINK
+
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
