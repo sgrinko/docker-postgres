@@ -54,8 +54,8 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && make USE_PGXS=1 install \
       # ====== pg_tsparser
       && cd /tmp/build_ext \
-#      && git clone https://github.com/postgrespro/pg_tsparser \
-      && git clone https://github.com/xinferum/pg_tsparser \
+      && git clone https://github.com/postgrespro/pg_tsparser \
+#      && git clone https://github.com/xinferum/pg_tsparser \
        && cd pg_tsparser \
       && make USE_PGXS=1 install \
       # shared_ispell
