@@ -60,12 +60,13 @@ WHERE pg_get_expr(c.relpartbound, c.oid, true) = 'DEFAULT';
              JOIN pg_class cc ON it_1.table_oid = cc.oid
              JOIN pg_namespace nn ON nn.oid = cc.relnamespace
         )
-SELECT c.reltuples::bigint, it.table_parent_schema, it.table_parent_name
+SELECT case when c.reltuples::bigint < 0 then 0::bigint else c.reltuples::bigint end as reltuples, it.table_parent_schema, it.table_parent_name
 FROM inheritance_tree it
 JOIN pg_class c ON c.oid = it.table_oid
 LEFT JOIN pg_partitioned_table p ON p.partrelid = it.table_oid
 WHERE pg_get_expr(c.relpartbound, c.oid, true) = 'DEFAULT'
-ORDER BY it.table_parent_schema, it.table_parent_name, c.reltuples;"""
+ORDER BY it.table_parent_schema, it.table_parent_name, c.reltuples;
+"""
 
     AgentPluginType = 'pg'
     key_rel_part = 'pgsql.partition.def.rows'

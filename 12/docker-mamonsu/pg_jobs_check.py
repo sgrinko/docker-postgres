@@ -13,7 +13,8 @@ class PgJobsCheck(Plugin):
     # получаем список всех БД
     query_agent_discovery = "select datname from pg_catalog.pg_database where datistemplate = false"
     # контролируем ошибки для конкретной БД
-    query = "select count(*) from cron.job_run_details where status <> 'succeeded' and start_time >= now()-'{0}'::interval and database='{1}'"
+    query = "select count(*) from cron.get_job_run_details('{1}','{0}'::interval) where status <> 'succeeded'"
+    query_table_exists = "select 1 from pg_class where relname='job_run_details' and relnamespace=(select oid from pg_namespace where nspname='cron')"
 
     AgentPluginType = 'pg'
     key_db = 'pgsql.jobs.error'
@@ -21,14 +22,20 @@ class PgJobsCheck(Plugin):
 
     def run(self, zbx):
         dbs = []
-        for info_dbs in Pooler.query(self.query_agent_discovery):
-            dbs.append({"{#DATABASE}": info_dbs[0]})
-            # проверяем наличе ошибок в каждой БД
-            err_count = 0   # пока ошибок нет
-            for info_rows in Pooler.query(self.query.format(self.plugin_config("interval_check"), info_dbs[0]), 'postgres'):
-                err_count = int(info_rows[0])   # есть ошибки, фиксируем
-            zbx.send(self.key_db+"[{0}]".format(info_dbs[0]), err_count)
-        zbx.send(self.key_db+'[]', zbx.json({'data': dbs}))
+        test_table = 0
+        for row in Pooler.query(self.query_table_exists, 'postgres'):
+            test_table = row[0]
+        if test_table > 0 :
+            for info_dbs in Pooler.query(self.query_agent_discovery):
+                dbs.append({"{#DATABASE}": info_dbs[0]})
+                # проверяем наличие ошибок в каждой БД
+                err_count = 0   # пока ошибок нет
+                # self.log.info('jobs[sql]='+ self.query.format(self.plugin_config("interval_check"), info_dbs[0]))
+                for info_rows in Pooler.query(self.query.format(self.plugin_config("interval_check"), info_dbs[0]), 'postgres'):
+                    err_count = int(info_rows[0])   # есть ошибки, фиксируем
+                    # self.log.info('info_rows[{0}]={1} '.format(info_dbs[0], info_rows))
+                zbx.send(self.key_db+"[{0}]".format(info_dbs[0]), err_count)
+            zbx.send(self.key_db+'[]', zbx.json({'data': dbs}))
 
     def discovery_rules(self, template, dashboard=False):
         rule = {

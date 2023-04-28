@@ -158,6 +158,19 @@ $$;
 
 COMMENT ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, text) IS 'Alter the job identified by job_id. Any option left as NULL will not be modified.';
 --
+CREATE OR REPLACE FUNCTION cron.get_job_run_details(
+    p_dbname    text,
+    p_interval  interval DEFAULT '1 day'::interval
+) RETURNS SETOF cron.job_run_details
+    LANGUAGE sql SECURITY DEFINER
+    AS $$
+select * from cron.job_run_details where start_time >= now()-p_interval and database=p_dbname;
+$$;
+COMMENT ON FUNCTION cron.get_job_run_details(text, interval) IS 'Returns the history of completed jobs for the specified database and the specified time period';
+--
+-- эта функция должна быть доступна для выполнения роли mamonsu
+GRANT EXECUTE ON FUNCTION cron.get_job_run_details(text, interval) TO mamonsu;
+
 
 -- ckeck exists roles
 select rolname as role_deploy from pg_roles where rolname ilike '%deploy%' limit 1 \gset
@@ -179,6 +192,7 @@ GRANT ALL ON SCHEMA cron TO postgres;
   GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO write_group;
   GRANT EXECUTE ON FUNCTION cron.unschedule(text) TO write_group;
   GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, text) TO write_group;
+  GRANT EXECUTE ON FUNCTION cron.get_job_run_details(text, interval) TO write_group;
 \endif
 --
 \if :{?role_deploy}
@@ -192,6 +206,7 @@ GRANT ALL ON SCHEMA cron TO postgres;
   GRANT EXECUTE ON FUNCTION cron.unschedule(bigint) TO :"role_deploy";
   GRANT EXECUTE ON FUNCTION cron.unschedule(text) TO :"role_deploy";
   GRANT EXECUTE ON FUNCTION cron.alter_job(bigint, text, text, text, text, boolean, text) TO :"role_deploy";
+  GRANT EXECUTE ON FUNCTION cron.get_job_run_details(text, interval) TO :"role_deploy";
 \endif
 
 -- в 1-ю неделю месяца замораживаем идентификаторы транзакций, в остальные недели только собираем статистику

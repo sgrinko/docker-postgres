@@ -24,7 +24,8 @@ select not exists(select true FROM pg_catalog.pg_roles where rolname ilike '%dep
 \if :is_check
     CREATE ROLE deploy;
     SET log_statement='none';
-    ALTER ROLE deploy WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD :'DEPLOY_PASSWORD';
+    ALTER ROLE deploy WITH NOSUPERUSER INHERIT CREATEROLE CREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD :'DEPLOY_PASSWORD';
+	GRANT pg_signal_backend TO deploy;
     SET log_statement='ddl';
 \endif
 select rolname as role_deploy from pg_roles where rolname ilike '%deploy%' limit 1 \gset
