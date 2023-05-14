@@ -212,12 +212,10 @@ GRANT ALL ON SCHEMA cron TO postgres;
 -- в 1-ю неделю месяца замораживаем идентификаторы транзакций, в остальные недели только собираем статистику
 \if :{?IS_SETUPDB}
   \if :IS_SETUPDB
-    select cron.schedule('vacuum JOB ', '0 0 * * 0', 
-      'do $$ begin if date_part(''day'', now()) <= 7 then perform * from pg_background_result(pg_background_launch(''vacuum (freeze,analyze);'')) as (result text); else perform * from pg_background_result(pg_background_launch(''vacuum (analyze);'')) as (result text); end if; end $$;'
-    );
+    select cron.schedule('vacuum JOB freeze', '0 0 1-7 * 0', 'vacuum (freeze,analyze);'); -- 1-я неделя каждого месяца
+    select cron.schedule('vacuum JOB', '0 0 8-31 * 0', 'vacuum (analyze);');              -- 2-4 неделя каждого месяца
   \endif
 \else
-  select cron.schedule('vacuum JOB ', '0 0 * * 0', 
-      'do $$ begin if date_part(''day'', now()) <= 7 then perform * from pg_background_result(pg_background_launch(''vacuum (freeze,analyze);'')) as (result text); else perform * from pg_background_result(pg_background_launch(''vacuum (analyze);'')) as (result text); end if; end $$;'
-  );
+    select cron.schedule('vacuum JOB freeze', '0 0 1-7 * 0', 'vacuum (freeze,analyze);'); -- 1-я неделя каждого месяца
+    select cron.schedule('vacuum JOB', '0 0 8-31 * 0', 'vacuum (analyze);');              -- 2-4 неделя каждого месяца
 \endif
