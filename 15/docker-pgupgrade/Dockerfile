@@ -4,7 +4,7 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:15.2
+FROM postgres:15.3
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
 ENV PG_MAJOR_OLD 14
@@ -147,7 +147,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && PATH=$PATH make USE_PGXS=1 install \
       # ====== pg_tsparser
       && cd /tmp/build_ext \
-#      && git clone https://github.com/postgrespro/pg_tsparser \
+      && git clone https://github.com/postgrespro/pg_tsparser \
 #      && git clone https://github.com/xinferum/pg_tsparser \
       && cd pg_tsparser \
       && PATH=$PATH make USE_PGXS=1 install \
