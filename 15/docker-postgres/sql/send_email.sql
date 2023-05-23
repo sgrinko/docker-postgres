@@ -27,9 +27,11 @@ CREATE OR REPLACE FUNCTION util.send_email(
 # select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
 # select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
 # select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
+# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea], ARRAY['zip']); -- отправить со сжатием в ZIP
 # select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
 # select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea], ARRAY['zip']);
 
+  import os
   import io
   import zipfile
   import socket
@@ -45,7 +47,9 @@ CREATE OR REPLACE FUNCTION util.send_email(
 
   _sender_address = p_sender_address
   if p_sender_address is None or p_sender_address == '' or p_sender_address.isspace():
-    _sender_address = socket.gethostname() + " <" +socket.gethostname() + "@company.ru>"
+    _sender_address = os.environ.get('EMAIL_HOSTNAME')
+    if _sender_address is None or _sender_address == '' or _sender_address.isspace():
+      _sender_address = socket.gethostname() + " <" +socket.gethostname() + "@company.ru>"
 
   _recipients_list = [r.strip() for r in p_to.replace(';',',').split(',')]
 
