@@ -36,12 +36,11 @@ RUN apt-get update \
       && mkdir -p $BACKUP_PATH \
       && chown -R postgres:postgres $BACKUP_PATH \
       # ... cleaning ...
-      && rm -rf /var/lib/apt/lists/* \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
       && apt-get -y autoclean \
-      && rm -rf /var/cache/apt
+      && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/apt/*
 
 COPY ./backup.sh /usr/local/bin
 COPY ./show.sh /usr/local/bin

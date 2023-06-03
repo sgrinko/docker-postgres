@@ -49,15 +49,13 @@ RUN apt-get update \
       && chown -R postgres:postgres $BACKUP_PATH \
       && chown -R postgres:postgres /etc/mamonsu /var/log/mamonsu \
       # ... cleaning ...
-      && rm -rf /tmp/build_mamonsu \
       && rm -rf /etc/mamonsu/* \
-      && rm -rf /var/lib/apt/lists/* \
       && apt-get purge -y make dpkg-dev debhelper \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
       && apt-get -y autoclean \
-      && rm -rf /var/cache/apt
+      && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/apt/*
 
 COPY ./mamonsu_start.sh /usr/local/bin
 COPY ./agent.conf /usr/local/bin/agent.conf.tmpl

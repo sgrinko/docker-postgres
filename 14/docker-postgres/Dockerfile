@@ -36,11 +36,11 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
            libkrb5-dev \
            postgresql-$PG_MAJOR-pg-catcheck \
       && sed -i "s/;\ttext size = 64512/\ttext size = 1262485504/g" /etc/freetds/freetds.conf \
-      && cd /tmp \
-      && mkdir -p build_ext \
-      && git config --global http.sslverify false \
+      && git config --global http.sslverify false  \
+      && mkdir -p /tmp/build_ext \
+      && cd /tmp/build_ext \
+      && rm -rf /tmp/build_ext/* \
       # ====== hunspell_dicts
-      && cd build_ext \
       && git clone https://github.com/postgrespro/hunspell_dicts \
       && cd hunspell_dicts \
       && cd hunspell_en_us \
@@ -92,8 +92,6 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && cd pg_background \
       && make \
       && make install \
-      # ====== clean build directory...
-      && rm -rf /tmp/build_ext \
       # ====== create backup path ...
       && mkdir -p $BACKUP_PATH \
       && chmod 0777 $BACKUP_PATH \
@@ -106,15 +104,13 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && ln -s /usr/share/postgresql/$PG_MAJOR/tsearch_data /usr/share/postgresql/ \
       # ====== clean all unused package...
       && apt-mark hold llvm-11-runtime \
-      && rm -rf /var/lib/apt/lists/* \
       && apt-get purge -y gcc freetds-dev git make postgresql-server-dev-$PG_MAJOR libicu-dev *-dev* \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
       && apt-get -y autoclean \
-      && rm -rf /var/cache/apt
-
-RUN mkdir -p /docker-entrypoint-initdb.d
+      && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/apt/* \
+      && mkdir -p /docker-entrypoint-initdb.d
 
 COPY ./locales.conf /etc/locales.conf
 # copy bash files

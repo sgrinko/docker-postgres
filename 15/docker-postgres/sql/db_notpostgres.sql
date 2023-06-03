@@ -269,3 +269,6 @@ GRANT CONNECT ON DATABASE :"dbconnect" TO mamonsu;
 GRANT USAGE ON SCHEMA pg_catalog TO mamonsu;
 GRANT SELECT ON TABLE pg_proc TO mamonsu;
 --
+
+-- устанавливаем переменную окружения для БД
+ALTER DATABASE :"dbconnect" SET adm.environment = :'environment_db_value';

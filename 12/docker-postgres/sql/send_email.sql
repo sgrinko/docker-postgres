@@ -27,7 +27,6 @@ CREATE OR REPLACE FUNCTION util.send_email(
 # select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
 # select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>');
 # select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
-# select util.send_email('sergey.grinko@company.ru','Проверка заголовка','Текст письма', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea], ARRAY['zip']); -- отправить со сжатием в ZIP
 # select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea]);
 # select util.send_email('sergey.grinko@company.ru','Проверка заголовка','<html><head></head><body><p>Hi!<br>How are you?<br>Here is the <a href="https://www.python.org">link</a> you wanted.</p></body></html>', NULL, NULL, ARRAY['file.txt'], ARRAY['содержимое файла file.txt'::bytea], ARRAY['zip']);
 

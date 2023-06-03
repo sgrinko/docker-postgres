@@ -27,12 +27,11 @@ RUN apt-get update \
       && mkdir -p /var/log/pgbouncer \
       && mkdir -p /var/log/mamonsu \
       # ... cleaning ...
-      && rm -rf /var/lib/apt/lists/* \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
       && apt-get -y autoclean \
-      && rm -rf /var/cache/apt
+      && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/apt/*
 
 COPY ./analyze_log.sh /usr/local/bin
 COPY ./pg_stat_statements_report.sql /var/lib/postgresql

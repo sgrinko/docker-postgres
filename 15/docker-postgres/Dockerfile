@@ -36,11 +36,11 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
            libkrb5-dev \
            postgresql-$PG_MAJOR-pg-catcheck \
       && sed -i "s/;\ttext size = 64512/\ttext size = 1262485504/g" /etc/freetds/freetds.conf \
-      && cd /tmp \
-      && mkdir -p build_ext \
-      && git config --global http.sslverify false \
-      # ====== hunspell_dicts
-      && cd build_ext \
+      && git config --global http.sslverify false  \
+      && mkdir -p /tmp/build_ext \
+      && cd /tmp/build_ext \
+      && rm -rf /tmp/build_ext/* \
+# ====== hunspell_dicts
       && git clone https://github.com/postgrespro/hunspell_dicts \
       && cd hunspell_dicts \
       && cd hunspell_en_us \
@@ -52,70 +52,65 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && cd ../hunspell_ru_ru_aot \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # ====== pg_tsparser
+# ====== pg_tsparser
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/pg_tsparser \
-#      && git clone https://github.com/xinferum/pg_tsparser \
-       && cd pg_tsparser \
+      && cd pg_tsparser \
       && make USE_PGXS=1 install \
-      # shared_ispell
+# ====== shared_ispell
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/shared_ispell \
       && cd shared_ispell \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # ====== pg_variables
+# ====== pg_variables
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/pg_variables \
       && cd pg_variables \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # ====== rum
+# ====== rum
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/rum --branch $RUM_VERSION  --single-branch \
       && cd rum \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # ====== pg_cron
+# ====== pg_cron
       && cd /tmp/build_ext \
       && git clone https://github.com/citusdata/pg_cron \
       && cd pg_cron \
       && make \
       && make install \
-      # ====== pg_dbo_timestamp
+# ====== pg_dbo_timestamp
       && cd /tmp/build_ext \
       && git clone https://github.com/pgcodekeeper/pg_dbo_timestamp \
       && cd pg_dbo_timestamp \
       && make USE_PGXS=1 install \
-      # ====== pg_background
+# ====== pg_background
       && cd /tmp/build_ext \
       && git clone https://github.com/vibhorkum/pg_background \
       && cd pg_background \
       && make \
       && make install \
-      # ====== clean build directory...
-      && rm -rf /tmp/build_ext \
-      # ====== create backup path ...
+# ====== create backup path ...
       && mkdir -p $BACKUP_PATH \
       && chmod 0777 $BACKUP_PATH \
       && chmod 0777 /var/log/postgresql \
       && chown postgres:postgres $BACKUP_PATH /var/log/postgresql \
-      # ====== make files on folder tsearch_data for mapping ...
+# ====== make files on folder tsearch_data for mapping ...
       && cd /usr/share/postgresql/$PG_MAJOR/tsearch_data \
       && tar -czf /usr/share/postgresql/$PG_MAJOR/tsearch_data.tar.gz . \
       && cd / \
       && ln -s /usr/share/postgresql/$PG_MAJOR/tsearch_data /usr/share/postgresql/ \
-      # ====== clean all unused package...
+# ====== clean all unused package...
       && apt-mark hold llvm-11-runtime \
-      && rm -rf /var/lib/apt/lists/* \
       && apt-get purge -y gcc freetds-dev git make postgresql-server-dev-$PG_MAJOR libicu-dev *-dev* \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
       && apt-get -y autoclean \
-      && rm -rf /var/cache/apt
-
-RUN mkdir -p /docker-entrypoint-initdb.d
+      && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/apt/* \
+      && mkdir -p /docker-entrypoint-initdb.d
 
 COPY ./locales.conf /etc/locales.conf
 # copy bash files

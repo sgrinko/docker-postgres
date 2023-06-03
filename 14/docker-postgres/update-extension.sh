@@ -15,6 +15,9 @@ fi
 if [ "$EMAIL_SERVER" = "" ]; then
     EMAIL_SERVER=mail.company.ru
 fi
+if [ "$ENV_DB_VALUE" = "" ]; then
+    ENV_DB_VALUE=DEV
+fi
 
 export PGUSER="$POSTGRES_USER"
 export PGDATABASE="$POSTGRES_DB"
@@ -31,7 +34,7 @@ for DB in "$POSTGRES_DB" "${@}"; do
     if [ "$DB" = "postgres" ] ; then
         su - postgres -c "cd /usr/local/bin/ && psql --dbname=\"$DB\" -f db_postgres.sql -v email_server=\"$EMAIL_SERVER\""
     else
-        su - postgres -c "cd /usr/local/bin/ && psql --dbname=\"$DB\" -f db_notpostgres.sql -v IS_SETUPDB=\"true\" -v DEV_SCHEMA=\"$DEV_SCHEMA\" -v POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\" -v email_server=\"$EMAIL_SERVER\""
+        su - postgres -c "cd /usr/local/bin/ && psql --dbname=\"$DB\" -f db_notpostgres.sql -v IS_SETUPDB=\"true\" -v DEV_SCHEMA=\"$DEV_SCHEMA\" -v POSTGRES_PASSWORD=\"$POSTGRES_PASSWORD\" -v email_server=\"$EMAIL_SERVER\" -v environment_db_value=\"$ENV_DB_VALUE\""
         if [ "$DB" != "template_extension" ] ; then
             su - postgres -c "cd /usr/local/bin/ && psql --dbname=\"$DB\" -f db_target.sql -v DEV_SCHEMA=\"$DEV_SCHEMA\" -v email_server=\"$EMAIL_SERVER\""
         fi

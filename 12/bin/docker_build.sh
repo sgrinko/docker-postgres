@@ -13,6 +13,16 @@ echo ""
 docker build . -t ${VERSION}_pgbouncer:latest
 cd ..
 
+cd docker-postgres
+dir=`pwd`
+echo ""
+echo "====================================="
+echo " $dir"
+echo "====================================="
+echo ""
+docker build . -t ${VERSION}_postgres:latest
+cd ..
+
 cd docker-analyze
 dir=`pwd`
 echo ""
@@ -51,16 +61,6 @@ echo " $dir"
 echo "====================================="
 echo ""
 docker build . -t ${VERSION}_pgprobackup_restore:latest
-cd ..
-
-cd docker-postgres
-dir=`pwd`
-echo ""
-echo "====================================="
-echo " $dir"
-echo "====================================="
-echo ""
-docker build . -t ${VERSION}_postgres:latest
 cd ..
 
 docker image ls

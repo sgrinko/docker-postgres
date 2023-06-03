@@ -14,6 +14,9 @@ fi
 if [ "$EMAIL_SERVER" = "" ]; then
     EMAIL_SERVER=mail.company.ru
 fi
+if [ "$ENV_DB_VALUE" = "" ]; then
+    ENV_DB_VALUE=DEV
+fi
 
 # Perform all actions as $POSTGRES_USER
 export PGUSER="$POSTGRES_USER"
@@ -73,7 +76,7 @@ for DB in "$POSTGRES_DB" template_extension "$APP_DB" ; do
     if [ "$DB" = "postgres" ] ; then
         psql --dbname="$DB" -f db_postgres.sql -v email_server="$EMAIL_SERVER"
     else
-        psql --dbname="$DB" -f db_notpostgres.sql -v IS_SETUPDB=false -v DEV_SCHEMA="$DEV_SCHEMA" -v POSTGRES_PASSWORD="$POSTGRES_PASSWORD" -v email_server="$EMAIL_SERVER"
+        psql --dbname="$DB" -f db_notpostgres.sql -v IS_SETUPDB=false -v DEV_SCHEMA="$DEV_SCHEMA" -v POSTGRES_PASSWORD="$POSTGRES_PASSWORD" -v email_server="$EMAIL_SERVER" -v environment_db_value="$ENV_DB_VALUE"
         if [ "$DB" != "template_extension" ] ; then
             psql --dbname="$DB" -f db_target.sql -v DEV_SCHEMA="$DEV_SCHEMA" -v email_server="$EMAIL_SERVER"
         fi
