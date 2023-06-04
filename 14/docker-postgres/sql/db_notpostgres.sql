@@ -270,5 +270,20 @@ GRANT USAGE ON SCHEMA pg_catalog TO mamonsu;
 GRANT SELECT ON TABLE pg_proc TO mamonsu;
 --
 
--- устанавливаем переменную окружения для БД
-ALTER DATABASE :"dbconnect" SET adm.environment = :'environment_db_value';
+-- проверка существования переменной окружения в базе данных 
+with _configs as (
+    select r.rolname, unnest(s.setconfig) as config 
+    from pg_db_role_setting s 
+    left join pg_roles 		r on r.oid=s.setrole 
+    where s.setdatabase = (select oid from pg_database where datname=current_database())
+),
+_get as (
+	select rolname, split_part(config, '=', 1) as variable, replace(config, split_part(config, '=', 1) || '=', '') as value
+	from _configs
+)
+SELECT NOT EXISTS(select 1 from _get where variable = 'adm.environment') as is_environment_db
+\gset
+\if :is_environment_db
+    -- устанавливаем переменную окружения для БД только если в БД нет ещё такой настройки
+    ALTER DATABASE :"dbconnect" SET adm.environment = :'environment_db_value';
+\endif
