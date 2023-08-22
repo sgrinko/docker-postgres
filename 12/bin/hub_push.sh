@@ -1,6 +1,6 @@
 #!/bin/bash
 VERSION=12
-MINOR=15
+MINOR=16
 
 set -euo pipefail
 
@@ -72,6 +72,6 @@ if ! docker image ls | grep "grufos/mamonsu" ; then
     echo "    push ..."
     docker tag ${VERSION}_mamonsu:latest grufos/mamonsu:latest
 #    docker push grufos/mamonsu:latest
-    docker tag grufos/mamonsu:latest grufos/mamonsu:${VERSION}_3.5.3
-    docker push grufos/mamonsu:${VERSION}_3.5.3
+    docker tag grufos/mamonsu:latest grufos/mamonsu:${VERSION}_3.5.5
+    docker push grufos/mamonsu:${VERSION}_3.5.5
 fi

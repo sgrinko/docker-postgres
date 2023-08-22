@@ -9,7 +9,7 @@ ENV DEBIAN_RELEASE bullseye
 ENV PG_MAJOR 12
 ENV BACKUP_PATH /mnt/pgbak
 # version mamonsu
-ENV VERSION 3.5.3
+ENV VERSION 3.5.5
 
 # explicitly set user/group IDs
 RUN set -eux; \

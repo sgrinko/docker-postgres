@@ -4,7 +4,7 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:14.8
+FROM postgres:14.9
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
@@ -103,14 +103,15 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && cd / \
       && ln -s /usr/share/postgresql/$PG_MAJOR/tsearch_data /usr/share/postgresql/ \
       # ====== clean all unused package...
-      && apt-mark hold llvm-11-runtime \
       && apt-get purge -y gcc freetds-dev git make postgresql-server-dev-$PG_MAJOR libicu-dev *-dev* \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
       && apt-get -y autoclean \
       && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/apt/* \
-      && mkdir -p /docker-entrypoint-initdb.d
+      && mkdir -p /docker-entrypoint-initdb.d \
+      && mkdir -p /app_db_init_sql \
+      && chmod 0777 /app_db_init_sql
 
 COPY ./locales.conf /etc/locales.conf
 # copy bash files

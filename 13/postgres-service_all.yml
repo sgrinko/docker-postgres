@@ -17,11 +17,13 @@ services:
       - "/var/log/postgresql1:/var/log/postgresql"
       - "/mnt/pgbak2/:/mnt/pgbak/"
       - "/usr/share/postgres/13_1/tsearch_data:/usr/share/postgresql/tsearch_data"
+      - "/var/lib/pgsql/13_1/app_db_init_sql:/app_db_init_sql"
     ports:
       - "5433:5432"
     environment:
       ENV_DB_VALUE: DEV
       APP_DB: "My_db"
+      APP_DB_PASSWORD: qweasdzxc
 #      POSTGRES_INITDB_ARGS: "--locale=ru_RU.UTF8 --data-checksums"
       POSTGRES_PASSWORD: qweasdzxc
       POSTGRES_HOST_AUTH_METHOD: trust

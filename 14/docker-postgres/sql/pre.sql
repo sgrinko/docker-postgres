@@ -15,6 +15,17 @@ select not exists(select true FROM pg_catalog.pg_database where datname='templat
   \if :is_check
     CREATE DATABASE :"APP_DB";
   \endif
+
+  -- роль для приложения
+  select not exists(select true FROM pg_catalog.pg_roles where rolname=:'APP_DB') as is_check
+  \gset
+  \if :is_check
+      CREATE ROLE :"APP_DB" ;
+      SET log_statement='none';
+      ALTER ROLE :"APP_DB" WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD :'APP_DB_PASSWORD'; 
+      SET log_statement='ddl';
+      ALTER DATABASE :"APP_DB" OWNER TO :"APP_DB";
+  \endif
 \endif
 
 -- create role deploy
@@ -109,3 +120,9 @@ GRANT CONNECT ON DATABASE postgres TO execution_group;
 GRANT CONNECT ON DATABASE postgres TO read_procedure_group;
 GRANT CONNECT ON DATABASE postgres TO monitoring_group;
 GRANT ALL PRIVILEGES ON TABLESPACE pg_global TO monitoring_group;
+
+-- на пока даём права как для ORM роли приложения
+\if :{?APP_DB}
+  GRANT write_group TO :"APP_DB" ;
+  GRANT execution_group TO :"APP_DB" ;
+\endif

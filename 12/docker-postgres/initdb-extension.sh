@@ -61,7 +61,7 @@ cd /usr/local/bin/
 
 # Create the 'template_extension' template DB and application DB
 if [ "$APP_DB" != "" ]; then
-  psql -f pre.sql -v DEPLOY_PASSWORD="$DEPLOY_PASSWORD" -v PGBOUNCER_PASSWORD="$PGBOUNCER_PASSWORD" -v APP_DB="$APP_DB"
+  psql -f pre.sql -v DEPLOY_PASSWORD="$DEPLOY_PASSWORD" -v PGBOUNCER_PASSWORD="$PGBOUNCER_PASSWORD" -v APP_DB="$APP_DB" -v APP_DB_PASSWORD="$APP_DB_PASSWORD"
 else
   psql -f pre.sql -v DEPLOY_PASSWORD="$DEPLOY_PASSWORD" -v PGBOUNCER_PASSWORD="$PGBOUNCER_PASSWORD"
 fi
@@ -79,6 +79,13 @@ for DB in "$POSTGRES_DB" template_extension "$APP_DB" ; do
         psql --dbname="$DB" -f db_notpostgres.sql -v IS_SETUPDB=false -v DEV_SCHEMA="$DEV_SCHEMA" -v POSTGRES_PASSWORD="$POSTGRES_PASSWORD" -v email_server="$EMAIL_SERVER" -v environment_db_value="$ENV_DB_VALUE"
         if [ "$DB" != "template_extension" ] ; then
             psql --dbname="$DB" -f db_target.sql -v DEV_SCHEMA="$DEV_SCHEMA" -v email_server="$EMAIL_SERVER"
+        fi
+        if [ "$DB" = "$APP_DB" ] ; then
+            echo " Иннициализируем БД всеми скриптами из каталога /app_db_init_sql ..."
+            for file_sql in $(ls /app_db_init_sql/*.sql) ; do
+                echo "Файл: $file_sql"
+                psql --dbname="$DB" -f "$file_sql"
+            done
         fi
     fi
   fi
