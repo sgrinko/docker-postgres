@@ -4,7 +4,7 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:15.3
+FROM postgres:15.4
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
 ENV PG_MAJOR_OLD 14

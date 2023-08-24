@@ -195,6 +195,32 @@ $ docker exec temp_postgres_1 update-extension.sh my_db
 
 Путь поиска после выполнения скрипта в указанной БД выглядит так: `search_path = dbo, public, tiger;`
 
+
+Пример:
+
+смотрим какие сейчас контейнеры работают:
+```
+$ docker ps
+CONTAINER ID   IMAGE         COMMAND                  CREATED          STATUS          PORTS                                       NAMES
+04c3a3a2f43b   15_postgres   "docker-entrypoint.s…"   11 minutes ago   Up 11 minutes   0.0.0.0:5433->5432/tcp, :::5433->5432/tcp   15_postgres_1
+```
+
+создадим БД с именем MyDbNew и отдельного пользователя по имени БД MyDbNew (будет владельцем новой БД)
+```
+$ docker exec 15_postgres_1 /bin/bash -c "su - postgres -c 'psql -f /usr/local/bin/pre.sql -v APP_DB=\"MyDbNew\" -v APP_DB_PASSWORD=\"MyDbNew_PASSWORD\"'"
+```
+
+выполним обновление БД до настроек контейнера:
+```
+$ docker exec 15_postgres_1 update-extension.sh "MyDbNew"
+```
+
+Меняем владельца БД на вновь созданного пользователя (по умолчанию там deploy)
+```
+$ docker exec 15_postgres_1 /bin/bash -c 'su - postgres -c "echo ALTER DATABASE \\\"MyDbNew\\\" OWNER TO \\\"MyDbNew\\\" | psql"'
+```
+
+
 ## Работа с бэкапами
 
 Контейнер рассчитан на работу с утилитой бэкапирования `pg_probackup` от компании Postgres Professional. В настройках `archive_command` и `restore_command` написана bash команда для вызова архивации/восстановления WAL файлов:
@@ -449,7 +475,7 @@ services:
       EMAIL_SERVER: "mail.name.ru"
       EMAIL_HOSTNAME: "noreplay@my_host.ru"
       BACKUP_THREADS: "4"
-      BACKUP_MODE: "delta"
+      BACKUP_MODE: "page"
 ```
 
 Этот управляющий файл рекомендуется запускать командами:
@@ -498,7 +524,7 @@ services:
       EMAIL_SERVER: "mail.name.ru"
       EMAIL_HOSTNAME: "noreplay@my_host.ru"
       BACKUP_THREADS: "4"
-      BACKUP_MODE: "delta"
+      BACKUP_MODE: "page"
 
   pgbouncer:
 #    image: grufos/pgbouncer:1.17.0
