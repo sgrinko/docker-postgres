@@ -227,7 +227,7 @@ $ docker exec 15_postgres_1 /bin/bash -c 'su - postgres -c "echo ALTER DATABASE 
 
 ```
 archive_command:
-if [ -f archive_pause.trigger ]; then exit 1; else if [ -f archive_active.trigger ]; then pg_probackup-15 archive-push -B /mnt/pgbak --instance 15 --wal-file-path %p --wal-file-name %f -j 4 --batch-size=50; else exit 0; fi; fi
+if [ -f archive_pause.trigger ]; then exit 1; else if [ -f archive_active.trigger ]; then pg_probackup-15 archive-push -B /mnt/pgbak --instance 15 --wal-file-path %p --wal-file-name %f -j 4 --batch-size=10; else exit 0; fi; fi
 
 restore_command:
 if [ -f archive_active.trigger ]; then pg_probackup-15 archive-get -B /mnt/pgbak --instance 15 --wal-file-path %p --wal-file-name %f; else exit 0; fi

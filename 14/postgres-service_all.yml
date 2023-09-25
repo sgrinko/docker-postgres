@@ -35,7 +35,7 @@ services:
       EMAIL_SERVER: "mail.company.ru"
       EMAIL_HOSTNAME: "noreplay@myhost.ru"
       BACKUP_THREADS: "4"
-      BACKUP_MODE: "delta"
+      BACKUP_MODE: "page"
 
   pgbouncer:
 #    image: grufos/pgbouncer:1.17.0
