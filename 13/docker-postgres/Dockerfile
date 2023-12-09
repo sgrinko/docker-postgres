@@ -4,24 +4,24 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:13.12
+FROM postgres:13.13
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
-ENV DEBIAN_RELEASE bullseye
+ENV DEBIAN_RELEASE bookworm
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
-ENV RUM_VERSION 1.3.11
+ENV RUM_VERSION 1.3.13
 
 RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8 \
       && apt-get update \
       && apt-get install -y --no-install-recommends ca-certificates jq wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop mc systemtap-sdt-dev vim \
-      && echo "deb [ trusted=yes arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
-      && wget --no-check-certificate -O - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/GPG-KEY-PG_PROBACKUP.gpg --import \
-      && chmod 644 /etc/apt/trusted.gpg.d/GPG-KEY-PG_PROBACKUP.gpg \
+      # подключаем репозитарий архивной утилиты
+      && echo "deb [arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
+      && wget -qO - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG-PROBACKUP | tee /etc/apt/trusted.gpg.d/pg_probackup.asc \
       && apt-get update \
       && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
       && apt-get install -y --no-install-recommends \
@@ -40,7 +40,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && mkdir -p /tmp/build_ext \
       && cd /tmp/build_ext \
       && rm -rf /tmp/build_ext/* \
-      # ====== hunspell_dicts
+# ====== hunspell_dicts
       && git clone https://github.com/postgrespro/hunspell_dicts \
       && cd hunspell_dicts \
       && cd hunspell_en_us \
@@ -52,58 +52,58 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && cd ../hunspell_ru_ru_aot \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # ====== pg_tsparser
+# ====== pg_tsparser
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/pg_tsparser \
       && cd pg_tsparser \
       && make USE_PGXS=1 install \
-      # shared_ispell
+# ====== shared_ispell
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/shared_ispell \
       && cd shared_ispell \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # ====== pg_variables
+# ====== pg_variables
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/pg_variables \
       && cd pg_variables \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # ====== rum
+# ====== rum
       && cd /tmp/build_ext \
       && git clone https://github.com/postgrespro/rum --branch $RUM_VERSION  --single-branch \
       && cd rum \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
-      # ====== pg_cron
+# ====== pg_cron
       && cd /tmp/build_ext \
       && git clone https://github.com/citusdata/pg_cron \
       && cd pg_cron \
       && make \
       && make install \
-      # ====== pg_dbo_timestamp
+# ====== pg_dbo_timestamp
       && cd /tmp/build_ext \
       && git clone https://github.com/pgcodekeeper/pg_dbo_timestamp \
       && cd pg_dbo_timestamp \
       && make USE_PGXS=1 install \
-      # ====== pg_background
+# ====== pg_background
       && cd /tmp/build_ext \
       && git clone https://github.com/vibhorkum/pg_background \
       && cd pg_background \
       && make \
       && make install \
-      # ====== create backup path ...
+# ====== create backup path ...
       && mkdir -p $BACKUP_PATH \
       && chmod 0777 $BACKUP_PATH \
       && chmod 0777 /var/log/postgresql \
       && chown postgres:postgres $BACKUP_PATH /var/log/postgresql \
-      # ====== make files on folder tsearch_data for mapping ...
+# ====== make files on folder tsearch_data for mapping ...
       && cd /usr/share/postgresql/$PG_MAJOR/tsearch_data \
       && tar -czf /usr/share/postgresql/$PG_MAJOR/tsearch_data.tar.gz . \
       && cd / \
       && ln -s /usr/share/postgresql/$PG_MAJOR/tsearch_data /usr/share/postgresql/ \
-      # ====== clean all unused package...
-      && apt-get purge -y gcc freetds-dev git make postgresql-server-dev-$PG_MAJOR libicu-dev *-dev* \
+# ====== clean all unused package...
+      && apt-get purge -y git* mariadb* make gcc gcc-12 cpp cpp-12 clang* golang* postgresql-server-dev-$PG_MAJOR *-dev *-man \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \

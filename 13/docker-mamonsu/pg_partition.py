@@ -65,6 +65,7 @@ FROM inheritance_tree it
 JOIN pg_class c ON c.oid = it.table_oid
 LEFT JOIN pg_partitioned_table p ON p.partrelid = it.table_oid
 WHERE pg_get_expr(c.relpartbound, c.oid, true) = 'DEFAULT'
+  and not pg_is_in_recovery()
 ORDER BY it.table_parent_schema, it.table_parent_name, c.reltuples;
 """
 

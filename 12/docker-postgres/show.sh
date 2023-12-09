@@ -38,6 +38,10 @@ cd $BACKUP_PATH
 su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR show --backup-path=$BACKUP_PATH > ~postgres/backups.txt"
 su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR show --backup-path=$BACKUP_PATH --archive >> ~postgres/backups.txt"
 
+echo "" >> ~postgres/backups.txt
+echo "Место на бэкапном устройстве:" >> ~postgres/backups.txt
+df -h $BACKUP_PATH >> ~postgres/backups.txt
+
 ERRORS_COUNT=`su - postgres -c "grep -c ERROR ~postgres/backups.txt"`
 EMAIL_SUBJECT=""
 if [[ "$ERRORS_COUNT" -ne "0" ]] ; then
@@ -47,7 +51,6 @@ else
 fi
 
 cat ~postgres/backups.txt
-
 if [ "$EMAIL_SEND" = "yes" ]; then
     (echo '<html>List of all cluster backups:<br><pre>' ; cat ~postgres/backups.txt ; echo '</pre></html>';) | sendEmail -f "$EMAIL_HOSTNAME" -t $EMAILTO -s $EMAIL_SERVER -u $EMAIL_SUBJECT
 fi

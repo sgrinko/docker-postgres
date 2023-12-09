@@ -37,16 +37,16 @@ CREATE SERVER IF NOT EXISTS fdw_postgres
     OPTIONS (user 'postgres');
 \endif
 
--- если задан deploy_password то создаём маппинги для пользователя развертывания приложений
-\if :{?deploy_password}
+-- если задан DEPLOY_PASSWORD то создаём маппинги для пользователя развертывания приложений
+\if :{?DEPLOY_PASSWORD}
   -- для fdw_postgres
   CREATE USER MAPPING IF NOT EXISTS FOR :role_deploy
     SERVER fdw_postgres
-    OPTIONS (user :'role_deploy', password :'deploy_password');
+    OPTIONS (user :'role_deploy', password :'DEPLOY_PASSWORD');
   -- для dblink_postgres
   CREATE USER MAPPING IF NOT EXISTS FOR :role_deploy
     SERVER dblink_postgres
-    OPTIONS (user :'role_deploy', password :'deploy_password');
+    OPTIONS (user :'role_deploy', password :'DEPLOY_PASSWORD');
 \else
   -- для fdw_postgres
   CREATE USER MAPPING IF NOT EXISTS FOR :role_deploy

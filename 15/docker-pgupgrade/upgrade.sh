@@ -174,6 +174,8 @@ parameter_copy "max_parallel_maintenance_workers"
 parameter_copy "max_parallel_workers_per_gather"
 parameter_copy "max_parallel_workers"
 parameter_copy "cron.timezone"
+parameter_copy "min_dynamic_shared_memory"
+parameter_copy "xmloption"
 
 echo
 echo 'старт check...'

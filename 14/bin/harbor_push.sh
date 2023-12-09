@@ -4,7 +4,9 @@ MINOR=10
 VERS_BOUNCER="1.20.1"
 VERS_PROBACKUP="2.5.13"
 VERS_MAMONSU="3.5.5"
-ACCOUNT=grufos
+PROJECT=dba_postgres
+URL=harbor.company.ru
+ACCOUNT="${URL}/${PROJECT}"
 LATEST_PUSH='no'
 
 set -euo pipefail

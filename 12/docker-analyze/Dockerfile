@@ -1,11 +1,11 @@
 # Based on:
 # https://hub.docker.com/_/debian
 #
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
-ENV DEBIAN_RELEASE bullseye
+ENV DEBIAN_RELEASE bookworm
 ENV PG_MAJOR 12
 ENV BACKUP_PATH /mnt/pgbak
 

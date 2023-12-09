@@ -6,7 +6,7 @@ FROM debian:bookworm-slim
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
 ENV DEBIAN_RELEASE bookworm
-ENV PG_MAJOR 13
+ENV PG_MAJOR 15
 ENV PGDATA /var/lib/postgresql/data
 ENV BACKUP_PATH /mnt/pgbak
 
@@ -35,13 +35,13 @@ RUN apt-get update \
       && mkdir -p $BACKUP_PATH \
       && chown -R postgres:postgres $BACKUP_PATH \
       # ... cleaning ...
+      && apt-get purge -y git* mariadb* make gcc gcc-12 cpp cpp-12 clang* golang* postgresql-server-dev-$PG_MAJOR *-dev *-man \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
       && apt-get -y autoclean \
       && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/cache/apt/*
 
-COPY ./backup.sh /usr/local/bin
 COPY ./show.sh /usr/local/bin
 COPY ./check_cluster.sh /usr/local/bin
 # copy sql files
@@ -50,4 +50,4 @@ COPY ./sql/*.sql /usr/local/bin/
 RUN chmod +x /usr/local/bin/*.sh
 
 USER postgres
-ENTRYPOINT [ "/usr/local/bin/backup.sh" ]
+ENTRYPOINT [ "/usr/local/bin/check_cluster.sh" ]

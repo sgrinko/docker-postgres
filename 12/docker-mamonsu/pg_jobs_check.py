@@ -13,7 +13,7 @@ class PgJobsCheck(Plugin):
     # получаем список всех БД
     query_agent_discovery = "select datname from pg_catalog.pg_database where datistemplate = false"
     # контролируем ошибки для конкретной БД
-    query = "select count(*) from cron.get_job_run_details('{1}','{0}'::interval) where status = 'failed'"
+    query = "select count(*) from cron.get_job_run_details('{1}','{0}'::interval) where status = 'failed' and not pg_is_in_recovery()"
     query_table_exists = "select 1 from pg_class where relname='job_run_details' and relnamespace=(select oid from pg_namespace where nspname='cron')"
 
     AgentPluginType = 'pg'

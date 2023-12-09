@@ -1,77 +1,41 @@
 #!/bin/bash
 VERSION=12
-MINOR=16
+MINOR=17
+VERS_BOUNCER="1.20.1"
+VERS_PROBACKUP="2.5.13"
+VERS_MAMONSU="3.5.5"
+ACCOUNT=grufos
+LATEST_PUSH='no'
 
 set -euo pipefail
 
-# pgbouncer
-#echo "========="
-#echo "pgbouncer"
-#echo "========="
-#if ! docker image ls | grep "grufos/pgbouncer" ; then
-#    echo "    push ..."
-#    docker tag ${VERSION}_pgbouncer:latest grufos/pgbouncer:latest
-#    docker push grufos/pgbouncer:latest
-#    docker tag grufos/pgbouncer:latest grufos/pgbouncer:1.19.0
-#    docker push grufos/pgbouncer:1.19.0
-#fi
-
-# postgres
-echo "========"
-echo "postgres"
-echo "========"
-if ! docker image ls | grep "grufos/postgres" ; then
-    echo "    push ..."
-    docker tag ${VERSION}_postgres:latest grufos/postgres:latest
-#    docker push grufos/postgres:latest
-    docker tag grufos/postgres:latest grufos/postgres:${VERSION}.${MINOR}
-    docker push grufos/postgres:${VERSION}.${MINOR}
+if [[ $# -ne 0 ]]; then
+    LISTDOCKER=$@
+else
+    LISTDOCKER="pgbouncer postgres pgupgrade analyze mamonsu pgprobackup pgprorestore"
 fi
 
-# pganalyze
-echo "========="
-echo "pganalyze"
-echo "========="
-if ! docker image ls | grep "grufos/pganalyze" ; then
-    echo "    push ..."
-    docker tag ${VERSION}_analyze:latest grufos/pganalyze:latest
-#    docker push grufos/pganalyze:latest
-    docker tag grufos/pganalyze:latest grufos/pganalyze:${VERSION}.${MINOR}
-    docker push grufos/pganalyze:${VERSION}.${MINOR}
-fi
-
-# pgprobackup
-echo "==========="
-echo "pgprobackup"
-echo "==========="
-if ! docker image ls | grep "grufos/pgprobackup" ; then
-    echo "    push ..."
-    docker tag ${VERSION}_pgprobackup_backup:latest grufos/pgprobackup:latest
-#    docker push grufos/pgprobackup:latest
-    docker tag grufos/pgprobackup:latest grufos/pgprobackup:${VERSION}.${MINOR}_2.5.12
-    docker push grufos/pgprobackup:${VERSION}.${MINOR}_2.5.12
-fi
-
-# pgprorestore
-echo "============"
-echo "pgprorestore"
-echo "============"
-if ! docker image ls | grep "grufos/pgprorestore" ; then
-    echo "    push ..."
-    docker tag ${VERSION}_pgprobackup_restore:latest grufos/pgprorestore:latest
-#    docker push grufos/pgprorestore:latest
-    docker tag grufos/pgprorestore:latest grufos/pgprorestore:${VERSION}.${MINOR}_2.5.12
-    docker push grufos/pgprorestore:${VERSION}.${MINOR}_2.5.12
-fi
-
-# mamonsu
-echo "======="
-echo "mamonsu"
-echo "======="
-if ! docker image ls | grep "grufos/mamonsu" ; then
-    echo "    push ..."
-    docker tag ${VERSION}_mamonsu:latest grufos/mamonsu:latest
-#    docker push grufos/mamonsu:latest
-    docker tag grufos/mamonsu:latest grufos/mamonsu:${VERSION}_3.5.5
-    docker push grufos/mamonsu:${VERSION}_3.5.5
-fi
+for param in $LISTDOCKER
+do
+    if [ "$param" = "pgbouncer" ]; then
+       vers="${VERS_BOUNCER}"
+    elif [ "$param" = "mamonsu" ]; then
+       vers="${VERSION}_${VERS_MAMONSU}"
+    elif [[ "$param" = "pgprobackup" || $param = "pgprorestore" ]]; then
+       vers="${VERSION}.${MINOR}_${VERS_PROBACKUP}"
+    else
+       vers="${VERSION}.${MINOR}"
+    fi
+    echo "======================="
+    echo "${param} -> ${vers}"
+    echo "======================="
+    if ! docker image ls | grep "${ACCOUNT}/${param}" ; then
+        echo "    push ..."
+        docker tag ${VERSION}_${param}:latest ${ACCOUNT}/${param}:latest
+        if [ "$LATEST_PUSH" = "yes" ]; then
+            docker push ${ACCOUNT}/${param}:latest
+        fi
+        docker tag ${ACCOUNT}/${param}:latest ${ACCOUNT}/${param}:${vers}
+        docker push ${ACCOUNT}/${param}:${vers}
+    fi
+done

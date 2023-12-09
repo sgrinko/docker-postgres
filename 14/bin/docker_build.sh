@@ -1,66 +1,29 @@
 #!/bin/bash
+#
+# получает через пробел имена контейнеров для сборки. Если не указано, то принимается такая строка:
+# pgbouncer postgres pgupgrade analyze mamonsu pgprobackup pgprorestore
+#
 VERSION=14
 
 set -euo pipefail
 
-cd docker-pgbouncer
-dir=`pwd`
-echo ""
-echo "====================================="
-echo " $dir"
-echo "====================================="
-echo ""
-docker build . -t ${VERSION}_pgbouncer:latest
-cd ..
+if [[ $# -ne 0 ]]; then
+    LISTDOCKER=$@
+else
+    LISTDOCKER="pgbouncer postgres pgupgrade analyze mamonsu pgprobackup pgprorestore"
+fi
 
-cd docker-postgres
-dir=`pwd`
-echo ""
-echo "====================================="
-echo " $dir"
-echo "====================================="
-echo ""
-docker build . -t ${VERSION}_postgres:latest
-cd ..
+for param in $LISTDOCKER
+do
+    cd docker-$param
+    dir=`pwd`
+    echo ""
+    echo "====================================="
+    echo " $dir"
+    echo "====================================="
+    echo ""
+    docker build --no-cache . -t ${VERSION}_$param:latest
+    cd ..
+done
 
-cd docker-analyze
-dir=`pwd`
-echo ""
-echo "====================================="
-echo " $dir"
-echo "====================================="
-echo ""
-docker build . -t ${VERSION}_analyze:latest
-cd ..
-
-cd docker-mamonsu
-dir=`pwd`
-echo ""
-echo "====================================="
-echo " $dir"
-echo "====================================="
-echo ""
-docker build . -t ${VERSION}_mamonsu:latest
-cd ..
-
-cd docker-pgprobackup
-dir=`pwd`
-echo ""
-echo "====================================="
-echo " $dir"
-echo "====================================="
-echo ""
-docker build . -t ${VERSION}_pgprobackup_backup:latest
-cd ..
-
-cd docker-pgprorestore
-dir=`pwd`
-echo ""
-echo "====================================="
-echo " $dir"
-echo "====================================="
-echo ""
-docker build . -t ${VERSION}_pgprobackup_restore:latest
-cd ..
-
-docker image ls
+docker image ls --all

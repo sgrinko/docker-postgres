@@ -1,11 +1,11 @@
 # Based on:
 # https://hub.docker.com/_/debian
 #
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
-ENV DEBIAN_RELEASE bullseye
+ENV DEBIAN_RELEASE bookworm
 ENV PG_MAJOR 15
 ENV BACKUP_PATH /mnt/pgbak
 
@@ -27,6 +27,7 @@ RUN apt-get update \
       && mkdir -p /var/log/pgbouncer \
       && mkdir -p /var/log/mamonsu \
       # ... cleaning ...
+      && apt-get purge -y git* mariadb* make gcc gcc-12 cpp cpp-12 clang* golang* postgresql-server-dev-$PG_MAJOR *-dev *-man \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \

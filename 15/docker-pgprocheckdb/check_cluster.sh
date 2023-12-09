@@ -59,14 +59,14 @@ function send_email()
     # отправляем письмо о выполнении скрипта, в параметре $1 указывается поясняющий текст, а в $2 заголовок письма
     # send mail to DBA
     if [ "$EMAIL_SEND" = "yes" ]; then
-       curr_log=`su - postgres -c "psql -Xtq -c 'select pg_current_logfile()'"`
-       db_name=`su - postgres -c "psql -Xtq -f /usr/local/bin/first_db.sql"`
+       curr_log=`psql -Xtq -c 'select pg_current_logfile()'`
+       db_name=`psql -Xtq -f /usr/local/bin/first_db.sql`
        # прикрепляем к письму последние несколько строк из log файла
        echo "" >> $REPORT_PATH/${curr_date}_check_cluster.txt
        echo '-- ===================== данные из лог файла postgresql ========================= --' >> $REPORT_PATH/${curr_date}_check_cluster.txt
        tail -n 100 $curr_log >> $REPORT_PATH/${curr_date}_check_cluster.txt
        # отправляем письмо
-       (echo "<html><pre> $1 <br>" ; cat $REPORT_PATH/${curr_date}_check_cluster.txt ; echo '</pre></html>';) | sendEmail -o message-content-type=html -o message-charset=utf-8 -f "$EMAIL_HOSTNAME" -t $EMAILTO -s $EMAIL_SERVER -u "$2 ($db_name)"
+       (echo "<html><pre> $1 <br>" ; cat $REPORT_PATH/${curr_date}_check_cluster.txt ; echo '</pre></html>';) | sendEmail -o tls=no -o message-content-type=html -o message-charset=utf-8 -f "$EMAIL_HOSTNAME" -t $EMAILTO -s $EMAIL_SERVER -u "$2 ($db_name)"
     else
 	    cat $REPORT_PATH/${curr_date}_check_cluster.txt
     fi
@@ -77,12 +77,12 @@ PGLOG=/var/log/postgresql
 SCRIPT_PATH=/var/lib/postgresql
 REPORT_PATH=$PGLOG/report
 
-su - postgres -c "mkdir -p $REPORT_PATH"
+mkdir -p $REPORT_PATH
 
 cd $REPORT_PATH
 
 curr_date=`eval date +%F`
-su - postgres -c "echo `date +%T` 'Старт checkdb проверки' > $REPORT_PATH/${curr_date}_check_cluster.txt"
+echo `date +%T` 'Старт checkdb проверки' > $REPORT_PATH/${curr_date}_check_cluster.txt
 
 # дополнительные опции проверки
 ADDOPTIONS=""
@@ -94,7 +94,7 @@ if [ $HEAPALLINDEXED = "true" ] ; then
 fi
 echo "Режим проверки: checkdb $ADDOPTIONS" >> $REPORT_PATH/${curr_date}_check_cluster.txt
 # запускаем общую проверку...
-su - postgres -c "/usr/bin/pg_probackup-$PG_MAJOR checkdb $ADDOPTIONS --threads=$BACKUP_THREADS -D $PGDATA -d postgres -w -h ${PGHOST:-127.0.0.1} -p ${PGPORT:-5432} >> $REPORT_PATH/${curr_date}_check_cluster.txt 2>&1"
+/usr/bin/pg_probackup-$PG_MAJOR checkdb $ADDOPTIONS --threads=$BACKUP_THREADS -D $PGDATA -d postgres -w -h ${PGHOST:-127.0.0.1} -p ${PGPORT:-5432} >> $REPORT_PATH/${curr_date}_check_cluster.txt 2>&1
 
 #########
 
@@ -147,7 +147,7 @@ cd ~postgres
 echo `date +%T` 'Старт проверки pg_catcheck...' >> $REPORT_PATH/${curr_date}_check_cluster.txt
 
 # получаем список баз данных в кластере
-dblist=`su - postgres -c "psql -Xtq -c \"select string_agg(datname, ' ') from pg_database where not datistemplate;\""`
+dblist=`psql -Xtq -c "select string_agg(datname, ' ') from pg_database where not datistemplate;"`
 
 echo -e "Список баз для проверки:\n$dblist" >> $REPORT_PATH/${curr_date}_check_cluster.txt
 
@@ -156,7 +156,7 @@ for db in $dblist
 do
     echo "" >> $REPORT_PATH/${curr_date}_check_cluster.txt
     echo "Check database: $db" >> $REPORT_PATH/${curr_date}_check_cluster.txt
-    if ! su - postgres -c "/usr/lib/postgresql/$PG_MAJOR/bin/pg_catcheck --postgresql --select-from-relations $db >> $REPORT_PATH/${curr_date}_check_cluster.txt 2>&1" ; then
+    if ! /usr/lib/postgresql/$PG_MAJOR/bin/pg_catcheck --postgresql --select-from-relations $db >> $REPORT_PATH/${curr_date}_check_cluster.txt 2>&1 ; then
         send_email "Найдены ошибки в бд $db при проверке pg_catcheck!" "$REPORT_PATH/${curr_date}_check_cluster.txt"
         exit 1
     fi

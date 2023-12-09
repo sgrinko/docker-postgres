@@ -4,7 +4,7 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:15.4
+FROM postgres:15.5
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
 ENV PG_MAJOR_OLD 14
@@ -24,7 +24,7 @@ ENV PGDATACOPY_MODE HARDLINK
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
-ENV DEBIAN_RELEASE bullseye
+ENV DEBIAN_RELEASE bookworm
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
 ENV RUM_VERSION 1.3.13
@@ -171,7 +171,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && make USE_PGXS=1 \
       && PATH=$PATH make USE_PGXS=1 install \
 # ====== clean all unused package...
-      && apt-get purge -y gcc freetds-dev git make postgresql-server-dev-$PG_MAJOR postgresql-server-dev-$PG_MAJOR_OLD libicu-dev *-dev* \
+      && apt-get purge -y git* mariadb* make gcc gcc-12 cpp cpp-12 clang* golang* postgresql-server-dev-$PG_MAJOR *-dev *-man \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \

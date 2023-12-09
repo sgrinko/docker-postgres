@@ -15,9 +15,9 @@ services:
       STAT_STATEMENTS: "true"
 #      TZ: "Etc/UTC"
       TZ: "Europe/Moscow"
-      PGPASSWORD: "qweasdzxc"
-#      PGHOST: "10.10.2.139"
-      PGHOST: "postgres"
-      PGPORT: "5432"
-      PGBHOST: "pgbouncer"
-      PGBPORT: "6432"
+      PGPASSWORD: qweasdzxc
+#      PGHOST: 10.10.2.139
+      PGHOST: postgres
+      PGPORT: 5432
+      PGBHOST: pgbouncer
+      PGBPORT: 6432

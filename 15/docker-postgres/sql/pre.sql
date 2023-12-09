@@ -125,4 +125,5 @@ GRANT ALL PRIVILEGES ON TABLESPACE pg_global TO monitoring_group;
 \if :{?APP_DB}
   GRANT write_group TO :"APP_DB" ;
   GRANT execution_group TO :"APP_DB" ;
+  GRANT readonly_group TO :"APP_DB" ;
 \endif

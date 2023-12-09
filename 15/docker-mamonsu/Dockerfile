@@ -1,11 +1,11 @@
 # Based on:
 # https://hub.docker.com/_/debian
 #
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
-ENV DEBIAN_RELEASE bullseye
+ENV DEBIAN_RELEASE bookworm
 ENV PG_MAJOR 15
 ENV BACKUP_PATH /mnt/pgbak
 # version mamonsu
@@ -38,10 +38,10 @@ RUN apt-get update \
       && ln -s /usr/local/bin/mamonsu /usr/bin/mamonsu \
       && mkdir -p /var/log/mamonsu \
       && chown -R postgres:postgres /var/log/mamonsu \
-      # ... install pg_probackup ...
-      && echo "deb [ trusted=yes arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
-      && wget --no-check-certificate -O - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/GPG-KEY-PG_PROBACKUP.gpg --import \
-      && chmod 644 /etc/apt/trusted.gpg.d/GPG-KEY-PG_PROBACKUP.gpg \
+      # подключаем репозитарий архивной утилиты
+      && echo "deb [arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
+      && wget -qO - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG-PROBACKUP | tee /etc/apt/trusted.gpg.d/pg_probackup.asc \
+      # ... updating ...
       && apt-get update \
       && apt-get install -y --no-install-recommends \
            pg-probackup-$PG_MAJOR \
@@ -49,6 +49,8 @@ RUN apt-get update \
       && chown -R postgres:postgres $BACKUP_PATH \
       && chown -R postgres:postgres /etc/mamonsu /var/log/mamonsu \
       # ... cleaning ...
+      # git* даёт ошибку!!! Не менять
+      && apt-get purge -y git mariadb* make gcc gcc-12 cpp cpp-12 clang* golang* postgresql-server-dev-$PG_MAJOR *-dev *-man \
       && rm -rf /etc/mamonsu/* \
       && apt-get purge -y make dpkg-dev debhelper \
       && apt-get -f install \

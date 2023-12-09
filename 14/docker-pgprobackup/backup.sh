@@ -61,7 +61,7 @@ fi
 if ! [ -d "$BACKUP_PATH/backups/$PG_MAJOR" ]; then
    echo "Create new instance for claster: $PG_MAJOR"
    /usr/bin/pg_probackup-$PG_MAJOR add-instance -B $BACKUP_PATH --instance=$PG_MAJOR -D $PGDATA
-   /usr/bin/pg_probackup-$PG_MAJOR set-config -B $BACKUP_PATH --instance=$PG_MAJOR --retention-window=7 --compress-algorithm=zlib --compress-level=6
+   /usr/bin/pg_probackup-$PG_MAJOR set-config -B $BACKUP_PATH --instance=$PG_MAJOR --retention-window=30 --compress-algorithm=zlib --compress-level=6
 fi
 
 IS_FULL=`/usr/bin/pg_probackup-$PG_MAJOR show --instance=$PG_MAJOR --backup-path=$BACKUP_PATH | grep FULL | grep 'OK\|DONE'`
@@ -89,6 +89,10 @@ fi
 /usr/bin/pg_probackup-$PG_MAJOR show --backup-path=$BACKUP_PATH > ~postgres/backups.txt
 /usr/bin/pg_probackup-$PG_MAJOR show --backup-path=$BACKUP_PATH --archive >> ~postgres/backups.txt
 
+echo "" >> ~postgres/backups.txt
+echo "Место на бэкапном устройстве:" >> ~postgres/backups.txt
+df -h $BACKUP_PATH >> ~postgres/backups.txt
+
 ERRORS_COUNT=`grep -c ERROR ~postgres/backups.txt`
 EMAIL_SUBJECT=""
 if [[ "$ERRORS_COUNT" -ne "0" ]] ; then
@@ -99,5 +103,5 @@ fi
 
 # send mail to DBA
 if [ "$EMAIL_SEND" = "yes" ]; then
-    (echo '<html>List of all cluster backups:<br><pre>' ; cat ~postgres/backups.txt ; echo '</pre></html>';) | sendEmail -o message-content-type=html -o message-charset=utf-8 -f "$EMAIL_HOSTNAME" -t $EMAILTO -s $EMAIL_SERVER -u $EMAIL_SUBJECT
+    (echo '<html>List of all cluster backups:<br><pre>' ; cat ~postgres/backups.txt ; echo '</pre></html>';) | sendEmail -o tls=no -o message-content-type=html -o message-charset=utf-8 -f "$EMAIL_HOSTNAME" -t $EMAILTO -s $EMAIL_SERVER -u $EMAIL_SUBJECT
 fi

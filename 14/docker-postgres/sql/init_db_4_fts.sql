@@ -14,6 +14,8 @@ DROP TEXT SEARCH CONFIGURATION IF EXISTS public.fts_aot_en_ru_sw;
 DROP TEXT SEARCH DICTIONARY IF EXISTS public.english_hunspell_shared_sw;
 DROP TEXT SEARCH DICTIONARY IF EXISTS public.russian_hunspell_shared_sw;
 DROP TEXT SEARCH DICTIONARY IF EXISTS public.russian_aot_shared_sw;
+
+DROP TEXT SEARCH DICTIONARY IF EXISTS public.fts_simple;
 -- ========================================================================== --
 
 -- DICTIONARY without stopwords
@@ -145,5 +147,88 @@ ALTER TEXT SEARCH CONFIGURATION public.fts_snowball_en_ru_sw
     WITH russian_stem;
 
 COMMENT ON TEXT SEARCH CONFIGURATION public.fts_snowball_en_ru_sw IS 'FTS snowball configuration for russian language based on tsparser with stopwords';
+
+-- ========================================================================== --
+
+CREATE TEXT SEARCH CONFIGURATION public.fts_simple (
+	PARSER = public.tsparser );
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR hword_part
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR hword
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR sfloat
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR numhword
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR uint
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR hword_numpart
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR float
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR version
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR url
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR int
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR asciiword
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR hword_asciipart
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR file
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR asciihword
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR host
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR numword
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR word
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR email
+	WITH simple;
+
+ALTER TEXT SEARCH CONFIGURATION public.fts_simple
+	ADD MAPPING FOR url_path
+	WITH simple;
+
+COMMENT ON TEXT SEARCH CONFIGURATION public.fts_simple IS 'Simple configuration';
 
 -- ========================================================================== --

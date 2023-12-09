@@ -1,9 +1,9 @@
 version: '3.5'
 services:
 
-  pgprobackup_check_cluster:
+  pgprocheckdb:
     build:
-      context: ./docker-pgprobackup
+      context: ./docker-pgprocheckdb
       dockerfile: Dockerfile
 
     volumes:
@@ -24,6 +24,4 @@ services:
       BACKUP_THREADS: "4"
       AMCHECK: "true"
       HEAPALLINDEXED: "true"
-
-    entrypoint: "/usr/local/bin/check_cluster.sh"
 

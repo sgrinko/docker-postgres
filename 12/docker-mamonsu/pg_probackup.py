@@ -1,3 +1,4 @@
+from mamonsu.plugins.pgsql.pool import Pooler
 from mamonsu.plugins.system.plugin import SystemPlugin as Plugin
 from mamonsu.lib.plugin import PluginDisableException
 import json
@@ -70,6 +71,9 @@ class PgProbackup(Plugin):
         fmt_data = "%Y-%m-%d %H:%M:%S+03"
         backup_dirs = config_backup_dirs.split(",")
         dirs = []
+        test_recovery = False
+        for row in Pooler.query('select not pg_is_in_recovery() as test_recovery', 'postgres'):
+            test_recovery = row[0]
         for _dir_top in backup_dirs:
 
             # Search for backups with bad status is done by running
@@ -130,11 +134,11 @@ class PgProbackup(Plugin):
                         zbx.send(self.key_dir_status_backup.format("[" + _dir + "]"), status)
                         # Backup Creation Mode Full, Page, Delta and Ptrack of the last backup
                         zbx.send(self.key_dir_mode_backup.format("[" + _dir + "]"), mode)
-                    if status in ["ERROR", "CORRUPT", "ORPHAN"]:
+                    if test_recovery and status in ["ERROR", "CORRUPT", "ORPHAN"]:
                         error = ("Backup with id: {backup_id} in instance: {instance_name} in pg_probackup dir: " +
-                                 "{backup_catalog}  has status: {status}.").format(backup_id=backup["id"],
-                                                                                   instance_name=instance["instance"],
-                                                                                   status=status, backup_catalog=_dir)
+                                "{backup_catalog}  has status: {status}.").format(backup_id=backup["id"],
+                                                                                instance_name=instance["instance"],
+                                                                                status=status, backup_catalog=_dir)
                         self.log.info(error)
                         no_error = False
                         zbx.send(self.key_dir_error.format("[" + _dir + "]"), error)

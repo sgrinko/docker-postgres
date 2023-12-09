@@ -4,14 +4,14 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:15.4
+FROM postgres:15.5
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
 ENV LANG ru_RU.utf8
 
 ENV POSTGIS_MAJOR 3
-ENV DEBIAN_RELEASE bullseye
+ENV DEBIAN_RELEASE bookworm
 ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
 ENV RUM_VERSION 1.3.13
@@ -19,9 +19,9 @@ ENV RUM_VERSION 1.3.13
 RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8 \
       && apt-get update \
       && apt-get install -y --no-install-recommends ca-certificates jq wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop mc systemtap-sdt-dev vim \
-      && echo "deb [ trusted=yes arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
-      && wget --no-check-certificate -O - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG_PROBACKUP | gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/GPG-KEY-PG_PROBACKUP.gpg --import \
-      && chmod 644 /etc/apt/trusted.gpg.d/GPG-KEY-PG_PROBACKUP.gpg \
+      # подключаем репозитарий архивной утилиты
+      && echo "deb [arch=amd64] https://repo.postgrespro.ru/pg_probackup/deb/ $DEBIAN_RELEASE main-$DEBIAN_RELEASE" > /etc/apt/sources.list.d/pg_probackup.list \
+      && wget -qO - https://repo.postgrespro.ru/pg_probackup/keys/GPG-KEY-PG-PROBACKUP | tee /etc/apt/trusted.gpg.d/pg_probackup.asc \
       && apt-get update \
       && apt-cache showpkg postgresql-$PG_MAJOR-postgis-$POSTGIS_MAJOR \
       && apt-get install -y --no-install-recommends \
@@ -34,7 +34,6 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
            postgresql-$PG_MAJOR-plpgsql-check \
            postgresql-$PG_MAJOR-tds-fdw \
            libkrb5-dev \
-           postgresql-$PG_MAJOR-pg-catcheck \
       && sed -i "s/;\ttext size = 64512/\ttext size = 1262485504/g" /etc/freetds/freetds.conf \
       && git config --global http.sslverify false  \
       && mkdir -p /tmp/build_ext \
@@ -103,7 +102,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && cd / \
       && ln -s /usr/share/postgresql/$PG_MAJOR/tsearch_data /usr/share/postgresql/ \
 # ====== clean all unused package...
-      && apt-get purge -y gcc freetds-dev git make postgresql-server-dev-$PG_MAJOR libicu-dev *-dev* \
+      && apt-get purge -y git* mariadb* make gcc gcc-12 cpp cpp-12 clang* golang* postgresql-server-dev-$PG_MAJOR *-dev *-man \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
@@ -119,7 +118,6 @@ COPY ./initdb-extension.sh /docker-entrypoint-initdb.d/10_extension.sh
 COPY ./update-extension.sh /usr/local/bin/
 COPY ./backup.sh /usr/local/bin/
 COPY ./show.sh /usr/local/bin/
-COPY ./check_cluster.sh /usr/local/bin/
 # copy sql files
 COPY ./sql/*.sql /usr/local/bin/
 # copy postgres files
