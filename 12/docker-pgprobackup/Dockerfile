@@ -30,7 +30,6 @@ RUN apt-get update \
       # ... install pg-probackup and other...
       && apt-get install -y --no-install-recommends \
            pg-probackup-$PG_MAJOR \
-           postgresql-$PG_MAJOR-pg-catcheck \
            postgresql-client-$PG_MAJOR \
       && mkdir -p $BACKUP_PATH \
       && chown -R postgres:postgres $BACKUP_PATH \

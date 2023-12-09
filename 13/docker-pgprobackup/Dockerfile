@@ -30,7 +30,6 @@ RUN apt-get update \
       # ... install pg-probackup and other...
       && apt-get install -y --no-install-recommends \
            pg-probackup-$PG_MAJOR \
-           postgresql-$PG_MAJOR-pg-catcheck \
            postgresql-client-$PG_MAJOR \
       && mkdir -p $BACKUP_PATH \
       && chown -R postgres:postgres $BACKUP_PATH \
@@ -43,7 +42,6 @@ RUN apt-get update \
 
 COPY ./backup.sh /usr/local/bin
 COPY ./show.sh /usr/local/bin
-COPY ./check_cluster.sh /usr/local/bin
 # copy sql files
 COPY ./sql/*.sql /usr/local/bin/
 

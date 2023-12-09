@@ -34,7 +34,6 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
            postgresql-$PG_MAJOR-plpgsql-check \
            postgresql-$PG_MAJOR-tds-fdw \
            libkrb5-dev \
-           postgresql-$PG_MAJOR-pg-catcheck \
       && sed -i "s/;\ttext size = 64512/\ttext size = 1262485504/g" /etc/freetds/freetds.conf \
       && git config --global http.sslverify false  \
       && mkdir -p /tmp/build_ext \
@@ -119,7 +118,6 @@ COPY ./initdb-extension.sh /docker-entrypoint-initdb.d/10_extension.sh
 COPY ./update-extension.sh /usr/local/bin/
 COPY ./backup.sh /usr/local/bin/
 COPY ./show.sh /usr/local/bin/
-COPY ./check_cluster.sh /usr/local/bin/
 # copy sql files
 COPY ./sql/*.sql /usr/local/bin/
 # copy postgres files
