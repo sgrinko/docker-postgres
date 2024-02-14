@@ -1,0 +1,27 @@
+version: '3.5'
+services:
+
+  pgprocheckdb:
+    build:
+      context: ./docker-pgprocheckdb
+      dockerfile: Dockerfile
+
+    volumes:
+      - "/var/log/postgresql1:/var/log/postgresql"
+      - "/var/lib/pgsql/14_1/data:/var/lib/postgresql/data"
+      - "/mnt/pgbak2/:/mnt/pgbak/"
+
+    environment:
+      TZ: "Europe/Moscow"
+      EMAILTO: "DBA-PostgreSQL@company.ru"
+      EMAIL_SERVER: "mail.company.ru"
+      EMAIL_HOSTNAME: "noreplay@myhost.ru"
+      EMAIL_SEND: "no"
+      PGHOST: "postgres"
+      PGPORT: "5432"
+      PGUSER: "postgres"
+      PGPASSWORD: "qweasdzxc"
+      BACKUP_THREADS: "4"
+      AMCHECK: "true"
+      HEAPALLINDEXED: "true"
+

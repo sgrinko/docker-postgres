@@ -1,6 +1,6 @@
 #!/bin/bash
 VERSION=12
-MINOR=17
+MINOR=18
 VERS_BOUNCER="1.22.0"
 VERS_PROBACKUP="2.5.13"
 VERS_MAMONSU="3.5.5"
@@ -12,7 +12,7 @@ set -euo pipefail
 if [[ $# -ne 0 ]]; then
     LISTDOCKER=$@
 else
-    LISTDOCKER="pgbouncer postgres pgupgrade analyze mamonsu pgprobackup pgprorestore"
+    LISTDOCKER="pgbouncer postgres pgupgrade analyze mamonsu pgprobackup pgprorestore pgprocheckdb"
 fi
 
 for param in $LISTDOCKER
@@ -21,7 +21,7 @@ do
        vers="${VERS_BOUNCER}"
     elif [ "$param" = "mamonsu" ]; then
        vers="${VERSION}_${VERS_MAMONSU}"
-    elif [[ "$param" = "pgprobackup" || $param = "pgprorestore" ]]; then
+    elif [[ "$param" = "pgprobackup" || $param = "pgprorestore" || $param = "pgprocheckdb" ]]; then
        vers="${VERSION}.${MINOR}_${VERS_PROBACKUP}"
     else
        vers="${VERSION}.${MINOR}"

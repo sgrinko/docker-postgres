@@ -1,11 +1,11 @@
 #!/bin/bash
 VERSION=15
-MINOR=5
+MINOR=6
 VERS_BOUNCER="1.22.0"
 VERS_PROBACKUP="2.5.13"
 VERS_MAMONSU="3.5.5"
 ACCOUNT=grufos
-LATEST_PUSH='yes'
+LATEST_PUSH='no'
 
 set -euo pipefail
 
@@ -21,7 +21,7 @@ do
        vers="${VERS_BOUNCER}"
     elif [ "$param" = "mamonsu" ]; then
        vers="${VERSION}_${VERS_MAMONSU}"
-    elif [[ "$param" = "pgprobackup" || $param = "pgprorestore" ]]; then
+    elif [[ "$param" = "pgprobackup" || $param = "pgprorestore" || $param = "pgprocheckdb" ]]; then
        vers="${VERSION}.${MINOR}_${VERS_PROBACKUP}"
     else
        vers="${VERSION}.${MINOR}"

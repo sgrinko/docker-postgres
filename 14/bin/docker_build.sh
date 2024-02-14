@@ -10,7 +10,7 @@ set -euo pipefail
 if [[ $# -ne 0 ]]; then
     LISTDOCKER=$@
 else
-    LISTDOCKER="pgbouncer postgres pgupgrade analyze mamonsu pgprobackup pgprorestore"
+    LISTDOCKER="pgbouncer postgres pgupgrade analyze mamonsu pgprobackup pgprorestore pgprocheckdb"
 fi
 
 for param in $LISTDOCKER
