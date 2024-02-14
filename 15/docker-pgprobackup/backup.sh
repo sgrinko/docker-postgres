@@ -25,13 +25,16 @@ if [ "$BACKUP_THREADS" = "" ]; then
     BACKUP_THREADS=4
 fi
 
-if [ "$BACKUP_MODE" = "" ]; then
-    BACKUP_MODE=page
-fi
-
 if [ "$DOW" = "6" ] ; then
     # make a full backup once a week (Saturday)
-    BACKUP_MODE=full
+    BACKUPMODE=full
+else
+    # make an incremental backup on other days of the week
+    BACKUPMODE=page
+fi
+if [ "$BACKUP_MODE" != "" ]; then
+    # The backup creation mode is given forcibly
+    BACKUPMODE=$BACKUP_MODE
 fi
 
 if [ "$BACKUP_STREAM" = "" ]; then
@@ -70,19 +73,31 @@ if ! [ -f $PGDATA/archive_active.trigger ] ; then
     touch $PGDATA/archive_active.trigger
 fi
 
-if [[ "$IS_FULL" = "" || $BACKUP_MODE = "full" ]] ; then
+if [[ "$IS_FULL" = "" || $BACKUPMODE = "full" ]] ; then
     echo "The initial backup must be type FULL ..."
-    /usr/bin/pg_probackup-$PG_MAJOR backup -d postgres --backup-path=$BACKUP_PATH -b full $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired --delete-wal
+    /usr/bin/pg_probackup-$PG_MAJOR backup -d postgres --backup-path=$BACKUP_PATH -b full $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS
 else
-    # Backup type depends on day or input parameter
-    /usr/bin/pg_probackup-$PG_MAJOR backup --backup-path=$BACKUP_PATH -b $BACKUP_MODE $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired --delete-wal
+    if [[ $BACKUPMODE = "merge" ]]; then
+        # в этом режиме здесь всегда PAGE
+        /usr/bin/pg_probackup-$PG_MAJOR backup --backup-path=$BACKUP_PATH -b page $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS
+    else
+        /usr/bin/pg_probackup-$PG_MAJOR backup --backup-path=$BACKUP_PATH -b $BACKUPMODE $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS
+    fi
     STATUS=`/usr/bin/pg_probackup-$PG_MAJOR show --backup-path=$BACKUP_PATH --instance=$PG_MAJOR --format=json | jq -c '.[].backups[0].status'`
     LAST_STATE=${STATUS//'"'/''}
     if [[ "$LAST_STATE" = "CORRUPT" || "$LAST_STATE" = "ERROR" || "$LAST_STATE" = "ORPHAN" ]] ; then
         # You need to run a full backup, as an error occurred with incremental
         # Perhaps the loss of the segment at Failover ...
-        /usr/bin/pg_probackup-$PG_MAJOR backup --backup-path=$BACKUP_PATH -b full $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS --delete-expired --delete-wal
+        /usr/bin/pg_probackup-$PG_MAJOR backup --backup-path=$BACKUP_PATH -b full $BACKUP_STREAM --instance=$PG_MAJOR -w --threads=$BACKUP_THREADS
     fi
+fi
+
+if [[ $BACKUPMODE = "merge" ]] ; then
+    # объединяем старые бэкапы в соответствии с настройками
+    /usr/bin/pg_probackup-$PG_MAJOR delete --backup-path=$BACKUP_PATH --instance=$PG_MAJOR --delete-expired --delete-wal --merge-expired --no-validate --threads=$BACKUP_THREADS
+else
+    # чистим старые бэкапы в соответствии с настройками
+    /usr/bin/pg_probackup-$PG_MAJOR delete --backup-path=$BACKUP_PATH --instance=$PG_MAJOR --delete-expired --delete-wal --threads=$BACKUP_THREADS
 fi
 
 # collecting statistics on backups

@@ -4,7 +4,7 @@
 # https://hub.docker.com/r/postgis/postgis
 #    https://github.com/postgis/docker-postgis
 #
-FROM postgres:12.17
+FROM postgres:12.18
 
 LABEL maintainer="Sergey Grinko <sergey.grinko@gmail.com>"
 
@@ -16,7 +16,7 @@ ENV BACKUP_PATH /mnt/pgbak
 ENV POSTGRES_INITDB_ARGS "--locale=ru_RU.UTF8 --data-checksums"
 ENV RUM_VERSION 1.3.13
 
-RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8 \
+RUN echo ru_RU.UTF-8 UTF-8 >> /etc/locale.gen; locale-gen \
       && apt-get update \
       && apt-get install -y --no-install-recommends ca-certificates jq wget freetds-dev freetds-common git make gcc postgresql-server-dev-$PG_MAJOR libicu-dev sendemail htop mc systemtap-sdt-dev vim \
       # подключаем репозитарий архивной утилиты
@@ -64,7 +64,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && make USE_PGXS=1 install \
 # ====== pg_variables
       && cd /tmp/build_ext \
-      && git clone https://github.com/postgrespro/pg_variables \
+      && git clone https://github.com/xinferum/pg_variables \
       && cd pg_variables \
       && make USE_PGXS=1 \
       && make USE_PGXS=1 install \
@@ -102,7 +102,7 @@ RUN localedef -i ru_RU -c -f UTF-8 -A /usr/share/locale/locale.alias ru_RU.UTF-8
       && cd / \
       && ln -s /usr/share/postgresql/$PG_MAJOR/tsearch_data /usr/share/postgresql/ \
 # ====== clean all unused package...
-      && apt-get purge -y git* mariadb* make gcc gcc-12 cpp cpp-12 clang* golang* postgresql-server-dev-$PG_MAJOR *-dev *-man \
+      && apt-get purge -y make gcc gcc-12 cpp cpp-12 clang* golang* postgresql-server-dev-$PG_MAJOR *-dev *-man \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \

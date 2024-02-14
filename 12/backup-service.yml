@@ -20,5 +20,5 @@ services:
       EMAIL_SERVER: "mail.company.ru"
       EMAIL_HOSTNAME: "noreplay@myhost.ru"
       BACKUP_THREADS: "4"
-      BACKUP_MODE: "page"
+      BACKUP_MODE: ""
       BACKUP_STREAM: "yes"

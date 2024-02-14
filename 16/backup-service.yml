@@ -1,0 +1,24 @@
+version: '3.5'
+services:
+
+  pgprobackup:
+    build:
+      context: ./docker-pgprobackup
+      dockerfile: Dockerfile
+
+    volumes:
+      - "/var/lib/pgsql/16_1/data:/var/lib/postgresql/data"
+      - "/mnt/pgbak2/:/mnt/pgbak/"
+
+    environment:
+      TZ: "Europe/Moscow"
+      PGHOST: postgres
+      PGPORT: 5432
+#      PGUSER: "postgres"
+#      PGPASSWORD: "qweasdzxc"
+      EMAILTO: "DBA-PostgreSQL@company.ru"
+      EMAIL_SERVER: "mail.company.ru"
+      EMAIL_HOSTNAME: "noreplay@myhost.ru"
+      BACKUP_THREADS: "4"
+      BACKUP_MODE: ""
+      BACKUP_STREAM: "yes"

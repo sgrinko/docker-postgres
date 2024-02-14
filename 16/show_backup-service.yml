@@ -1,0 +1,19 @@
+version: '3.5'
+services:
+
+  pgprobackup_show:
+    build:
+      context: ./docker-pgprobackup
+      dockerfile: Dockerfile
+
+    volumes:
+      - "/mnt/pgbak2/:/mnt/pgbak/"
+
+    environment:
+      TZ: "Europe/Moscow"
+      EMAILTO: "DBA-PostgreSQL@company.ru"
+      EMAIL_SERVER: "mail.company.ru"
+      EMAIL_HOSTNAME: "noreplay@myhost.ru"
+      EMAIL_SEND: "no"
+
+    entrypoint: "/usr/local/bin/show.sh"

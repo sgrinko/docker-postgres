@@ -27,7 +27,7 @@ RUN apt-get update \
       && mkdir -p /var/log/pgbouncer \
       && mkdir -p /var/log/mamonsu \
       # ... cleaning ...
-      && apt-get purge -y git* mariadb* make gcc gcc-12 cpp cpp-12 clang* golang* postgresql-server-dev-$PG_MAJOR *-dev *-man \
+      && apt-get purge -y make gcc gcc-12 cpp cpp-12 clang* golang* postgresql-server-dev-$PG_MAJOR *-dev *-man \
       && apt-get -f install \
       && apt-get -y autoremove \
       && apt-get -y clean \
